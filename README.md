@@ -1,265 +1,247 @@
-# GitHub Template for FAIR and Open Research Data
+# Iconclass Classification Pipeline
 
-**Transforming research documentation from static afterthought into living, executable environments.**
+**A reproducible pipeline to classify digital heritage objects using Iconclass VLM via Ollama.**
 
-This template provides an infrastructure for documenting, publishing, and archiving research data in line with the principles of [FAIR](https://www.go-fair.org/fair-principles/) and open science. It is independent of data type or format and implements best practices as outlined in [The Turing Way](https://the-turing-way.netlify.app/). Core components include automated release management, integrated archiving with [Zenodo](https://zenodo.org/), structured documentation via [Quarto](https://quarto.org/), and long-term accessibility through [GitHub Pages](https://pages.github.com/).
+This project implements an automated, locally-hosted pipeline for classifying artwork images with [Iconclass](https://iconclass.org/) codes using a Vision-Language Model (VLM) running under [Ollama](https://ollama.ai/). Designed for the Stadt Geschichte Basel digital collections, the pipeline processes metadata, downloads images, classifies them, and writes results back with full provenance tracking.
 
-[![GitHub issues](https://img.shields.io/github/issues/maehr/open-research-data-template.svg)](https://github.com/maehr/open-research-data-template/issues)
-[![GitHub forks](https://img.shields.io/github/forks/maehr/open-research-data-template.svg)](https://github.com/maehr/open-research-data-template/network)
-[![GitHub stars](https://img.shields.io/github/stars/maehr/open-research-data-template.svg)](https://github.com/maehr/open-research-data-template/stargazers)
-[![Code license](https://img.shields.io/github/license/maehr/open-research-data-template.svg)](https://github.com/maehr/open-research-data-template/blob/main/LICENSE-AGPL.md)
-[![Data license](https://img.shields.io/github/license/maehr/open-research-data-template.svg)](https://github.com/maehr/open-research-data-template/blob/main/LICENSE-CCBY.md)
-
-<!-- [![DOI](https://zenodo.org/badge/614287827.svg)](https://zenodo.org/badge/latestdoi/ZENODO_RECORD) -->
-
-## 🤝 Academic Recognition
-
-This approach was presented at the [Digital Humanities Tech Symposium (DHTech) 2025](https://dh-tech.github.io/2025/06/04/digital-humanities-tech-symposium-agenda/) and exemplifies how reusable templates can address persistent challenges in research data management.
-
-> Mähr, M., & Twente, M. (2025). _One Template to Rule Them All: Interactive Research Data Documentation with Quarto._ Digital Humanities Tech Symposium, NOVA University Lisbon. [https://maehr.github.io/one-template-to-rule-them-all/](https://maehr.github.io/one-template-to-rule-them-all/).
-
-## Why use a template (even for small datasets)?
-
-Conventional data publication as static supplementary files offers limited reproducibility and reusability. This template extends such practices by providing:
-
-- 📊 **Executable narratives** that embed code outputs directly into documentation
-- 🚀 **Automated deployment and testing** that reduces technical overhead
-- 🏛️ **Integrated archiving with DOI** through seamless Zenodo integration
-- 📈 **Scalability and consistency** across diverse project types and domains
-- 🔒 **Enhanced security** with automated vulnerability monitoring
-- 🤝 **Community standards** following accepted ethics and collaboration practices
+[![GitHub issues](https://img.shields.io/github/issues/Stadt-Geschichte-Basel/iconclass-classification.svg)](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/issues)
+[![Code license](https://img.shields.io/github/license/Stadt-Geschichte-Basel/iconclass-classification.svg)](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/blob/main/LICENSE-AGPL.md)
+[![Data license](https://img.shields.io/badge/license-CC%20BY%204.0-blue.svg)](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/blob/main/LICENSE-CCBY.md)
 
 ## Features
 
-### Open Research Data
+- 🎨 **Automated Iconclass Classification**: Uses the Iconclass VLM model via Ollama for accurate classification
+- 📦 **Batch Processing**: Process entire collections from metadata.json files
+- 🔄 **Smart Image Processing**: Automatic download, resize, normalization, and SHA256-based caching
+- 📊 **Dual Output**: Compact codes in metadata + detailed JSONL records for auditability
+- 🔍 **Full Provenance**: Timestamped run directories with complete audit trail (requests, responses, manifests)
+- 🛡️ **Robust**: Built-in retry logic, comprehensive error handling, and logging
+- 📐 **Type-Safe**: Pydantic models ensure data validation and consistency
+- 🧪 **Tested**: Unit and integration tests ensure reliability
 
-- Citable via [DOI](https://www.doi.org/) and [CITATION.cff](https://citation-file-format.github.io/)
-- Automatic long-term archiving with [Zenodo](https://zenodo.org/)
-- Licensed under [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html) and [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed) according to [The Turing Way](https://the-turing-way.netlify.app/reproducible-research/rdm/rdm-sharing.html#step-3-choose-a-licence-and-link-to-your-paper-and-code)
-- Template for reporting data issues via `github/ISSUE_TEMPLATE/data_issue_report.yml`
+## Quick Start
 
-### Documentation
+### Prerequisites
 
-- `README.md` following [www.makeareadme.com](https://www.makeareadme.com/) and [The Turing Way](https://book.the-turing-way.org/project-design/pd-overview/project-repo/project-repo-readme)
-- `CHANGELOG.md` following [keepachangelog.com](https://keepachangelog.com/)
-- Automated changelog generation with [git-cliff](https://github.com/orhun/git-cliff)
-- Machine-readable project metadata in `package.json` with [npm](https://docs.npmjs.com/cli/v7/configuring-npm/package-json)
-- Accessible documentation with [GitHub Pages](https://docs.github.com/en/pages) and [Quarto](https://quarto.org/)
+- Python ≥ 3.11
+- [Ollama](https://ollama.ai/) running locally
+- The Iconclass VLM model:
+  ```bash
+  ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
+  ```
 
-### Consistency
-
-- Code formatting with [Prettier](https://prettier.io/) for general files, [Ruff](https://github.com/astral-sh/ruff) for Python, and [styler](https://styler.r-lib.org/) and [lintr](https://lintr.r-lib.org/) for R
-- Python type checking with [ty](https://github.com/astral-sh/ty)
-- Python dependency management with [uv](https://github.com/astral-sh/uv)
-- R dependency management with [renv](https://rstudio.github.io/renv/)
-- Commit messages following [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) enforced via [husky](https://github.com/typicode/husky)
-- Versioning following [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
-- Workflow based on [fork and pull](https://gist.github.com/Chaser324/ce0505fbed06b947d962) with [GitHub branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule)
-- Issue tracking via [issue templates](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository)
-- File and folder naming conventions following [The Turing Way](https://the-turing-way.netlify.app/reproducible-research/rdm/rdm-storage.html#file-naming-conventions)
-
-### Security
-
-- `SECURITY.md` following [GitHub guidelines](https://docs.github.com/en/code-security/getting-started/adding-a-security-policy-to-your-repository)
-- Vulnerability monitoring with [GitHub Security Alerts](https://github.blog/2017-11-16-introducing-security-alerts-on-github/)
-- Repository integrity enforced via [GitHub branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule)
-
-### Ethics
-
-- `CODE_OF_CONDUCT.md` following the [Contributor Covenant](https://www.contributor-covenant.org/)
-- Supportive first interactions via [Greetings](https://github.com/actions/starter-workflows/blob/main/automation/greetings.yml)
-
-## Selected Use Cases
-
-The template has been applied across domains including public history, political science, digital humanities, and teaching infrastructures.
-
-### 🔬 Research Data Documentation
-
-| Project                                                                                                                                                                            | Preview                                                                                                                                                                                                                            |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [**Stadt.Geschichte.Basel RDM**](https://dokumentation.stadtgeschichtebasel.ch/)<br>Project documentation platform combining research data management with public history outreach | <a href="https://dokumentation.stadtgeschichtebasel.ch/"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/dokumentation_stadtgeschichtebasel_ch.png" width="540px" alt=""></a>                         |
-| [**sgb-figures**](https://dokumentation.stadtgeschichtebasel.ch/sgb-figures/)<br>Reproducible code and annotated data for publication-ready visualisations of research data        | <a href="https://dokumentation.stadtgeschichtebasel.ch/sgb-figures/"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/dokumentation_stadtgeschichtebasel_ch_sgb_figures.png" width="540px" alt=""></a> |
-
-### 📊 Reproducible Research Workflows
-
-| Project                                                                                                                                                                 | Preview                                                                                                                                                                                 |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [**nordatlantisk-ft**](http://mtwente.github.io/nordatlantisk-ft/)<br>Voting records from the parliament of Denmark with complete data scraping and analysis pipeline   | <a href="http://mtwente.github.io/nordatlantisk-ft"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/nordatlantisk_ft_report.png" width="540px" alt=""></a> |
-| [**maxvogt-analysis**](https://mtwente.github.io/maxvogt-analysis/)<br>Multi-step data compilation workflow documentation                                               | <a href="https://mtwente.github.io/maxvogt-analysis"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/maxvogt_analysis.png" width="540px" alt=""></a>       |
-| [**Modelling Marti**](https://mtwente.github.io/modelling-marti)<br>Topic modeling project with interactive visualizations and multimedia content as narrative elements | <a href="https://mtwente.github.io/modelling-marti"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/modelling_marti.png" width="540px" alt=""></a>         |
-
-### 🎓 Academic Events & Teaching
-
-| Project                                                                                                                                            | Preview                                                                                                                                                                                           |
-| -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [**Digital History Switzerland 2024**](https://digihistch24.github.io/)<br>Conference website with program, abstracts, and participant information | <a href="https://digihistch24.github.io/"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/digihistch24.png" width="540px" alt=""></a>                                |
-| [**Digital Humanities Bern**](https://dhbern.github.io/)<br>Department hub featuring news, events, and course information                          | <a href="https://dhbern.github.io/"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/dhbern.png" width="540px" alt=""></a>                                            |
-| [**Decoding Inequality 2025**](https://dhbern.github.io/decoding-inequality-2025/)<br>University course website with syllabus and materials        | <a href="https://dhbern.github.io/decoding-inequality-2025/"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/decoding_inequality_2025.png" width="540px" alt=""></a> |
-
-### 📚 Living Publications & Handbooks
-
-| Project                                                                                                                                                                              | Preview                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [**Non-discriminatory Metadata**](https://maehr.github.io/diskriminierungsfreie-metadaten/)<br>Comprehensive handbook that functions as both documentation and scholarly publication | <a href="https://maehr.github.io/diskriminierungsfreie-metadaten/"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/diskriminierungsfreie_metadaten.png" width="540px" alt=""></a> |
-| [**One Template to Rule Them All**](https://maehr.github.io/one-template-to-rule-them-all/)<br>This repository's own presentation site, demonstrating meta-application               | <a href="https://maehr.github.io/one-template-to-rule-them-all/"><img src="https://maehr.github.io/one-template-to-rule-them-all/paper/images/one_template_to_rule_them_all.png" width="540px" alt=""></a>     |
-
-## Installation
-
-We recommend using **[GitHub Codespaces](https://github.com/features/codespaces)** for a reproducible setup.
-
-## Getting Started
-
-### For Most Users: Reproducible Setup with GitHub Codespaces
-
-1. **[Use this template](https://github.com/new?template_name=open-research-data-template&template_owner=maehr)** for your project in a new repository on your GitHub account.
-
-   <div align="center">
-     <img src="https://github.com/maehr/open-research-data-template/raw/main/.github/docs/assets/img_use.png" alt="Use the repository" style="width: 540px; margin: 1em 0;" />
-   </div>
-
-2. Click the green **`<> Code`** button at the top right of this repository.
-
-3. Select the **“Codespaces”** tab and click **“Create codespace on `main`”**.
-   GitHub will now build a container that includes:
-   - ✅ Node.js (via `npm`)
-   - ✅ Python with `uv`
-   - ✅ R with `renv`
-   - ✅ Quarto
-
-   <div align="center">
-     <img src="https://github.com/maehr/open-research-data-template/raw/main/.github/docs/assets/img_codespace.png" alt="Create Codespace" style="width: 540px; margin: 1em 0;" />
-   </div>
-
-4. Once the Codespace is ready, open a terminal and preview the documentation:
-
-   ```bash
-   uv run quarto preview
-   ```
-
-   <div align="center">
-     <img src="https://github.com/maehr/open-research-data-template/raw/main/.github/docs/assets/img_terminal.png" alt="Terminal window showing command" style="width: 540px; margin: 1em 0;" />
-   </div>
-
-> **Note:** All dependencies (Node.js, Python, R, Quarto) are pre-installed in the Codespace.
-
-<details>
-<summary>👩‍💻 <strong>Advanced</strong> Local Installation</summary>
-
-#### Prerequisites
-
-- [Node.js](https://nodejs.org/en/download/)
-- [R](https://cran.r-project.org/) and Rtools (on Windows)
-- [uv (Python manager)](https://github.com/astral-sh/uv#installation)
-- [Quarto](https://quarto.org/docs/get-started/)
-
-> _Note: `uv` installs and manages the correct Python version automatically._
-
-#### Local Setup Steps
+### Installation
 
 ```bash
-# 1. Install Node.js dependencies
-npm install
-npm run prepare
+# Clone the repository
+git clone https://github.com/Stadt-Geschichte-Basel/iconclass-classification.git
+cd iconclass-classification
 
-# 2. Setup Python environment
-uv sync
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# 3. Setup R environment
-Rscript -e 'install.packages("renv"); renv::restore()'
-
-# 4. Preview documentation
-uv run quarto preview
+# Install dependencies
+pip install requests pillow tqdm pydantic tenacity click
 ```
 
-</details>
+### Basic Usage
 
-## Project Setup
-
-After creating your project from this template (either via Codespaces or local setup), follow the comprehensive checklist in [TODO.md](TODO.md) to customize and finalize your project. The checklist includes essential setup tasks, optional enhancements, and verification steps to ensure your research data repository is properly configured.
-
-## Use
-
-Check that all files are properly formatted.
+Classify images from Basel's digital collections:
 
 ```bash
+python -m iconclass_classification classify \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --sample 3
+```
+
+The pipeline will:
+
+1. Fetch metadata from the source URL
+2. Download and process images
+3. Classify each image with Ollama's Iconclass VLM
+4. Write results to `runs/<timestamp>/`
+
+For detailed usage instructions, see [USAGE.md](USAGE.md).
+
+## Output Structure
+
+Each run creates a timestamped directory with complete provenance:
+
+```
+runs/<UTC-ISO8601>/
+  raw/metadata.json              # Original metadata
+  data/
+    src/                         # Cached images (deduplicated by SHA256)
+    <objectid>.jpg               # Processed images
+  classify/
+    <objectid>_request.json      # Classification requests
+    <objectid>_response.json     # Model responses
+  logs/pipeline.log              # Detailed logs
+  results/
+    metadata.classified.json     # Metadata with Iconclass codes
+    iconclass_details.jsonl      # Detailed classification records
+  manifest.json                  # Run metadata & counts
+```
+
+### Example Output
+
+**Compact metadata** (`metadata.classified.json`):
+
+```json
+{
+	"objectid": "abb10039",
+	"title": "Die Löblich und wyt berümpt Stat Basel",
+	"subject": ["71H7131", "25F2"]
+}
+```
+
+**Detailed record** (`iconclass_details.jsonl`):
+
+```json
+{
+	"objectid": "abb10039",
+	"subject": {
+		"iconclass": {
+			"codes": ["71H7131", "25F2"],
+			"model": "hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M",
+			"image_sha256": "...",
+			"timestamp": "2025-11-01T10:00:00Z"
+		}
+	}
+}
+```
+
+## Architecture
+
+The pipeline is modular and consists of these components:
+
+```
+src/iconclass_classification/
+  models.py         # Pydantic data models
+  image_utils.py    # Image download & processing
+  ollama_client.py  # Ollama API integration
+  pipeline.py       # Pipeline orchestration
+  cli.py            # Command-line interface
+```
+
+### How It Works
+
+1. **Fetch Metadata**: Download metadata.json from source URL
+2. **Image Selection**: Choose best available image URL (prefer `object_location`, fallback to `object_thumb`)
+3. **Download & Cache**: Download images with SHA256-based deduplication
+4. **Process**: Resize to max size, convert to RGB, compress as JPEG
+5. **Classify**: Send processed images to Ollama Iconclass VLM
+6. **Extract**: Parse Iconclass codes from model responses using regex
+7. **Write**: Update metadata with codes, save detailed JSONL records
+8. **Log**: Save all requests, responses, and run manifest
+
+## Development
+
+### Running Tests
+
+```bash
+# Install test dependencies
+pip install pytest
+
+# Run all tests
+PYTHONPATH=src:$PYTHONPATH pytest test/ -v
+
+# Run only unit tests
+PYTHONPATH=src:$PYTHONPATH pytest test/unit/ -v
+
+# Run only integration tests
+PYTHONPATH=src:$PYTHONPATH pytest test/integration/ -v
+```
+
+### Code Quality
+
+```bash
+# Format Python code
+ruff format .
+
+# Check Python code
+ruff check .
+
+# Auto-fix issues
+ruff check --fix .
+
+# Format all files
+npm run format
+
+# Check all files
 npm run check
 ```
 
-Format all files with [Prettier](https://prettier.io/).
+## Troubleshooting
+
+### Ollama Not Running
+
+Ensure Ollama is running:
 
 ```bash
-npm run format
+ollama serve
 ```
 
-Format all Python files with [Ruff](https://github.com/astral-sh/ruff) and lint with [ty](https://github.com/astral-sh/ty) (if applicable).
+### Model Not Found
+
+Pull the Iconclass VLM model:
 
 ```bash
-uv run ruff format
-uv run ruff check
-uv run ty check
+ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
 ```
 
-Format all R files with [styler](https://styler.r-lib.org/) and lint with [lintr](https://lintr.r-lib.org/).
+### Memory Issues
 
-```r
-styler::style_dir(".")
-lintr::lint_dir(".")
-```
-
-Run the wizard to write meaningful commit messages.
+Reduce image size or use sample mode:
 
 ```bash
-npm run commit
+python -m iconclass_classification classify \
+  --source <URL> \
+  --max-side 512 \
+  --sample 10
 ```
-
-Run the wizard to create a CHANGELOG.md.
-
-```bash
-npm run changelog
-```
-
-Preview the documentation.
-
-```bash
-quarto preview
-```
-
-Check for broken links in the rendered site (requires `_site` directory from `quarto render`).
-
-```bash
-npm run deadlink-check
-```
-
-## Support
-
-This project is maintained by [@maehr](https://github.com/maehr). Please understand that we can't provide individual support via email. We also believe that help is much more valuable when it's shared publicly, so more people can benefit from it.
-
-| Type                                   | Platforms                                                                              |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| 🚨 **Bug Reports**                     | [GitHub Issue Tracker](https://github.com/maehr/open-research-data-template/issues)    |
-| 📊 **Report bad data**                 | [GitHub Issue Tracker](https://github.com/maehr/open-research-data-template/issues)    |
-| 📚 **Docs Issue**                      | [GitHub Issue Tracker](https://github.com/maehr/open-research-data-template/issues)    |
-| 🎁 **Feature Requests**                | [GitHub Issue Tracker](https://github.com/maehr/open-research-data-template/issues)    |
-| 🛡 **Report a security vulnerability** | See [SECURITY.md](SECURITY.md)                                                         |
-| 💬 **General Questions**               | [GitHub Discussions](https://github.com/maehr/open-research-data-template/discussions) |
-
-## Roadmap
-
-There are currently no changes planned.
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## Authors and credits
+## Support
 
-- **Moritz Mähr** - _Initial work_ - [maehr](https://github.com/maehr)
-- **Moritz Twente** - _Enhancements_ - [mtwente](https://github.com/mtwente)
-
-See also the list of [contributors](https://github.com/maehr/open-research-data-template/graphs/contributors) who contributed to this project.
+- 🐛 [Report a bug](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/issues)
+- 💬 [Ask a question](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/discussions)
+- 📚 [View documentation](USAGE.md)
 
 ## License
 
-The data in this repository is released under the Creative Commons Attribution 4.0 International (CC BY 4.0) License - see the [LICENSE-CCBY](LICENSE-CCBY.md) file for details. By using this data, you agree to give appropriate credit to the original author(s) and to indicate if any modifications have been made.
+- **Code**: [AGPL-3.0](LICENSE-AGPL.md)
+- **Data**: [CC BY 4.0](LICENSE-CCBY.md)
 
-The code in this repository is released under the GNU Affero General Public License v3.0 - see the [LICENSE-AGPL](LICENSE-AGPL.md) file for details. By using this code, you agree to make any modifications available under the same license.
+## Citation
+
+If you use this project in your research, please cite:
+
+```bibtex
+@software{iconclass_classification,
+  title = {Iconclass Classification Pipeline},
+  author = {Stadt Geschichte Basel},
+  year = {2025},
+  url = {https://github.com/Stadt-Geschichte-Basel/iconclass-classification}
+}
+```
+
+## Acknowledgments
+
+This project builds upon:
+
+- [Iconclass](https://iconclass.org/) classification system
+- [Ollama](https://ollama.ai/) for local LLM hosting
+- The [open-research-data-template](https://github.com/maehr/open-research-data-template) for infrastructure
+- [Pydantic](https://pydantic.dev/) for data validation
+- [Pillow](https://pillow.readthedocs.io/) for image processing
+
+## Authors
+
+- **Stadt Geschichte Basel** - [Website](https://www.stadtgeschichtebasel.ch/)
+
+See also the list of [contributors](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/graphs/contributors) who participated in this project.
