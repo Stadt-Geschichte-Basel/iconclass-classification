@@ -31,12 +31,14 @@ This project implements an automated pipeline for classifying artwork images wit
 ### Setup
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/Stadt-Geschichte-Basel/iconclass-classification.git
    cd iconclass-classification
    ```
 
 2. Create and activate a virtual environment:
+
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
@@ -86,19 +88,19 @@ python -m iconclass_classification classify \
 
 ### Command-Line Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--source` | *required* | URL to metadata.json |
-| `--model` | `hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M` | Ollama model name |
-| `--ollama-url` | `http://localhost:11434` | Ollama service URL |
-| `--max-side` | `1024` | Maximum image side length in pixels |
-| `--quality` | `92` | JPEG quality (1-100) |
-| `--top-k` | `None` | Maximum number of codes per image |
-| `--sample` | `None` | Process only first N objects |
-| `--output` | `runs` | Base output directory |
-| `--temperature` | `0.0` | Model temperature |
-| `--num-ctx` | `4096` | Context window size |
-| `--num-predict` | `128` | Maximum tokens to predict |
+| Option          | Default                                        | Description                         |
+| --------------- | ---------------------------------------------- | ----------------------------------- |
+| `--source`      | _required_                                     | URL to metadata.json                |
+| `--model`       | `hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M` | Ollama model name                   |
+| `--ollama-url`  | `http://localhost:11434`                       | Ollama service URL                  |
+| `--max-side`    | `1024`                                         | Maximum image side length in pixels |
+| `--quality`     | `92`                                           | JPEG quality (1-100)                |
+| `--top-k`       | `None`                                         | Maximum number of codes per image   |
+| `--sample`      | `None`                                         | Process only first N objects        |
+| `--output`      | `runs`                                         | Base output directory               |
+| `--temperature` | `0.0`                                          | Model temperature                   |
+| `--num-ctx`     | `4096`                                         | Context window size                 |
+| `--num-predict` | `128`                                          | Maximum tokens to predict           |
 
 ## Output Structure
 
@@ -130,9 +132,9 @@ Each object gains a flat `subject` array with Iconclass codes:
 
 ```json
 {
-  "objectid": "abb10039",
-  "title": "Die Löblich und wyt berümpt Stat Basel",
-  "subject": ["71H7131", "25F2"]
+	"objectid": "abb10039",
+	"title": "Die Löblich und wyt berümpt Stat Basel",
+	"subject": ["71H7131", "25F2"]
 }
 ```
 
@@ -142,26 +144,26 @@ One JSON record per line with complete metadata:
 
 ```json
 {
-  "objectid": "abb10039",
-  "subject": {
-    "iconclass": {
-      "codes": ["71H7131", "25F2"],
-      "top_k": [
-        {"code": "71H7131", "rank": 1},
-        {"code": "25F2", "rank": 2}
-      ],
-      "model": "hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M",
-      "prompt": "Generate Iconclass labels for this image",
-      "temperature": 0.0,
-      "num_ctx": 4096,
-      "num_predict": 128,
-      "raw_text": "<model output>",
-      "image_sha256": "<sha256>",
-      "image_source": "<URL>",
-      "processed_image_path": "data/abb10039.jpg",
-      "timestamp": "2025-11-01T10:00:00Z"
-    }
-  }
+	"objectid": "abb10039",
+	"subject": {
+		"iconclass": {
+			"codes": ["71H7131", "25F2"],
+			"top_k": [
+				{ "code": "71H7131", "rank": 1 },
+				{ "code": "25F2", "rank": 2 }
+			],
+			"model": "hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M",
+			"prompt": "Generate Iconclass labels for this image",
+			"temperature": 0.0,
+			"num_ctx": 4096,
+			"num_predict": 128,
+			"raw_text": "<model output>",
+			"image_sha256": "<sha256>",
+			"image_source": "<URL>",
+			"processed_image_path": "data/abb10039.jpg",
+			"timestamp": "2025-11-01T10:00:00Z"
+		}
+	}
 }
 ```
 
@@ -246,6 +248,7 @@ The pipeline consists of several modular components:
 ### Ollama Not Running
 
 Ensure Ollama is running:
+
 ```bash
 ollama serve
 ```
@@ -253,6 +256,7 @@ ollama serve
 ### Model Not Found
 
 Pull the Iconclass VLM model:
+
 ```bash
 ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
 ```
@@ -260,6 +264,7 @@ ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
 ### Memory Issues
 
 Reduce image size or batch size:
+
 ```bash
 python -m iconclass_classification classify \
   --source <URL> \
@@ -292,6 +297,7 @@ If you use this project in your research, please cite:
 ## Support
 
 For questions, issues, or contributions:
+
 - 🐛 [Report a bug](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/issues)
 - 💬 [Ask a question](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/discussions)
 - 📖 [Read the documentation](https://github.com/Stadt-Geschichte-Basel/iconclass-classification)
@@ -299,6 +305,7 @@ For questions, issues, or contributions:
 ## Acknowledgments
 
 This project uses:
+
 - [Ollama](https://ollama.ai/) for local LLM hosting
 - [Iconclass](https://iconclass.org/) classification system
 - [Pydantic](https://pydantic.dev/) for data validation
