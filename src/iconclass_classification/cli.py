@@ -88,6 +88,12 @@ def cli():
     help="Base output directory for runs",
 )
 @click.option(
+    "--prompt-template",
+    type=click.Choice(["default", "instruction", "few_shot"]),
+    default="default",
+    help="Prompt template: default, instruction-based, or few-shot examples",
+)
+@click.option(
     "--temperature",
     type=float,
     default=0.0,
@@ -117,6 +123,7 @@ def classify(
     sampling_seed: int,
     fixed_ids_file: str | None,
     output: Path,
+    prompt_template: str,
     temperature: float,
     num_ctx: int,
     num_predict: int,
@@ -154,6 +161,7 @@ def classify(
         image_config=image_config,
         class_options=class_options,
         sampling_config=sampling_config,
+        prompt_template=prompt_template,
         top_k=top_k,
     )
 

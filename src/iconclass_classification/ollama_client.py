@@ -3,6 +3,7 @@
 import base64
 import copy
 import json
+import logging
 import re
 from pathlib import Path
 from typing import Any
@@ -11,13 +12,9 @@ import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from iconclass_classification.models import ClassificationOptions
+from iconclass_classification.prompting import get_prompts
 
-SYSTEM_PROMPT = (
-    "You are an Iconclass classifier. Given an artwork image, "
-    "output only newline-separated Iconclass codes."
-)
-
-USER_PROMPT = "Generate Iconclass labels for this image"
+logger = logging.getLogger(__name__)
 
 # Pattern to match Iconclass codes (alphanumeric starting with digit or letter)
 # Must have at least 2 characters, avoid single letters like "T"
@@ -36,20 +33,32 @@ def encode_image_base64(image_bytes: bytes) -> str:
     return base64.b64encode(image_bytes).decode("utf-8")
 
 
-def extract_codes(text: str, top_k: int | None = None) -> list[str]:
+def extract_codes(
+    text: str, top_k: int | None = None, filter_none: bool = True
+) -> list[str]:
     """Extract Iconclass codes from model response.
 
     Args:
         text: Raw model response text
         top_k: Maximum number of codes to return
+        filter_none: If True, filter out 'NONE' indicator
 
     Returns:
         List of unique Iconclass codes in order of appearance
     """
+    # Check for explicit NONE indicator
+    if filter_none and "NONE" in text.upper():
+        logger.debug("Model explicitly indicated NONE - no codes")
+        return []
+
     seen = set()
     codes = []
 
     for match in CODE_PATTERN.findall(text):
+        # Filter out NONE if it somehow matched
+        if filter_none and match.upper() == "NONE":
+            continue
+
         if match not in seen:
             seen.add(match)
             codes.append(match)
@@ -68,6 +77,7 @@ def classify_image(
     model: str,
     ollama_url: str,
     options: ClassificationOptions | None = None,
+    prompt_template: str = "default",
     timeout: int = 120,
 ) -> dict[str, Any]:
     """Classify image using Ollama API.
@@ -77,6 +87,7 @@ def classify_image(
         model: Ollama model name
         ollama_url: Ollama service URL
         options: Classification options
+        prompt_template: Prompt template to use (default, instruction, few_shot)
         timeout: Request timeout in seconds
 
     Returns:
@@ -88,6 +99,9 @@ def classify_image(
     if options is None:
         options = ClassificationOptions()
 
+    # Get prompts for the template
+    system_prompt, user_prompt = get_prompts(prompt_template)
+
     # Encode image
     image_b64 = encode_image_base64(image_bytes)
 
@@ -95,10 +109,10 @@ def classify_image(
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {
                 "role": "user",
-                "content": USER_PROMPT,
+                "content": user_prompt,
                 "images": [image_b64],
             },
         ],
@@ -118,7 +132,10 @@ def classify_image(
     )
     response.raise_for_status()
 
-    return response.json()
+    result = response.json()
+    # Add template info for debugging
+    result["_prompt_template"] = prompt_template
+    return result
 
 
 def save_classification_artifacts(

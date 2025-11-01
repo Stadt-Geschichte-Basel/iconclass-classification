@@ -75,6 +75,7 @@ def test_pipeline_structure(tmp_path, mock_metadata, mock_ollama_response):
             image_config=ImageProcessingConfig(max_side=512),
             class_options=ClassificationOptions(),
             sampling_config=SamplingConfig(mode="full"),
+            prompt_template="default",
         )
 
         # Check that run directory was created

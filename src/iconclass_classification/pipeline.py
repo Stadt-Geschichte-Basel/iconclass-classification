@@ -39,11 +39,11 @@ from iconclass_classification.models import (
     SubjectDetails,
 )
 from iconclass_classification.ollama_client import (
-    USER_PROMPT,
     classify_image,
     extract_codes,
     save_classification_artifacts,
 )
+from iconclass_classification.prompting import get_prompts, log_empty_response_debug
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +180,7 @@ def process_object(
     ollama_config: OllamaConfig,
     image_config: ImageProcessingConfig,
     class_options: ClassificationOptions,
+    prompt_template: str = "default",
     top_k: int | None = None,
 ) -> tuple[list[str], ClassificationRecord | None]:
     """Process a single object through the pipeline.
@@ -190,6 +191,7 @@ def process_object(
         ollama_config: Ollama configuration
         image_config: Image processing configuration
         class_options: Classification options
+        prompt_template: Prompt template to use
         top_k: Maximum number of codes to extract
 
     Returns:
@@ -222,21 +224,29 @@ def process_object(
     processed_path.write_bytes(processed_bytes)
 
     # Classify with Ollama
-    logger.info(f"Classifying {objectid} with Ollama")
+    logger.info(f"Classifying {objectid} with Ollama (template={prompt_template})")
     response = classify_image(
         processed_bytes,
         ollama_config.model,
         ollama_config.url,
         class_options,
+        prompt_template=prompt_template,
     )
+
+    # Get prompts for saving
+    system_prompt, user_prompt = get_prompts(prompt_template)
 
     # Save classification artifacts
     save_classification_artifacts(
         objectid,
         {
             "model": ollama_config.model,
-            "messages": [{"role": "user", "content": USER_PROMPT}],
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
             "options": class_options.model_dump(),
+            "prompt_template": prompt_template,
         },
         response,
         run_path / "classify",
@@ -245,6 +255,10 @@ def process_object(
     # Extract codes
     raw_text = response.get("message", {}).get("content", "")
     codes = extract_codes(raw_text, top_k)
+
+    # Log debug info for empty responses
+    if not codes:
+        log_empty_response_debug(objectid, raw_text, prompt_template, processed_sha256)
 
     logger.info(f"Extracted {len(codes)} codes for {objectid}: {codes}")
 
@@ -258,7 +272,7 @@ def process_object(
         codes=codes,
         top_k=top_k_ranks,
         model=ollama_config.model,
-        prompt=USER_PROMPT,
+        prompt=user_prompt,
         temperature=class_options.temperature,
         num_ctx=class_options.num_ctx,
         num_predict=class_options.num_predict,
@@ -284,6 +298,7 @@ def run_pipeline(
     image_config: ImageProcessingConfig,
     class_options: ClassificationOptions,
     sampling_config: SamplingConfig,
+    prompt_template: str = "default",
     top_k: int | None = None,
 ) -> None:
     """Run the complete classification pipeline.
@@ -295,6 +310,7 @@ def run_pipeline(
         image_config: Image processing configuration
         class_options: Classification options
         sampling_config: Sampling configuration
+        prompt_template: Prompt template to use
         top_k: Maximum number of codes per object
     """
     # Create run directory
@@ -368,7 +384,8 @@ def run_pipeline(
                 ollama_config,
                 image_config,
                 class_options,
-                top_k,
+                prompt_template=prompt_template,
+                top_k=top_k,
             )
 
             if codes:
