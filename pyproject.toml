@@ -1,11 +1,18 @@
 [project]
-name = "REPO_NAME"
+name = "iconclass-classification"
 version = "0.1.0"
-description = "SHORT_DESCRIPTION"
-authors = [{ name = "FULLNAME", email = "[INSERT CONTACT METHOD]" }]
+description = "Reproducible pipeline to classify digital objects using Iconclass VLM via Ollama"
+authors = [{ name = "Stadt Geschichte Basel", email = "info@stadtgeschichtebasel.ch" }]
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "requests>=2.31.0",
+    "pillow>=10.0.0",
+    "tqdm>=4.66.0",
+    "pydantic>=2.0.0",
+    "tenacity>=8.2.0",
+    "click>=8.1.0",
+]
 
 [dependency-groups]
 dev = [
@@ -34,7 +41,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["REPO_NAME"]
+known-first-party = ["iconclass_classification"]
 
 [tool.ruff.format]
 quote-style = "double"

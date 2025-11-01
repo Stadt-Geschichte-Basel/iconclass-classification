@@ -4,6 +4,12 @@
 **/*.quarto_ipynb
 _site/
 
+# Pipeline runs directory
+runs/
+
+# Virtual environment
+.venv/
+
 # Exclude example.env
 !example.env
 
