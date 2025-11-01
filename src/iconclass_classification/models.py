@@ -66,10 +66,22 @@ class ClassificationOptions(BaseModel):
     num_predict: int = 128
 
 
+class SamplingConfig(BaseModel):
+    """Configuration for data sampling."""
+
+    mode: Literal["random", "fixed", "full"] = "full"
+    size: int | None = None
+    seed: int = 42
+    fixed_ids_file: str | None = None
+
+
 class RunCounts(BaseModel):
     """Counts for a pipeline run."""
 
     total: int = 0
+    abb_filtered: int = 0
+    m_included: int = 0
+    sampled: int = 0
     attempted: int = 0
     classified: int = 0
     skipped: int = 0
@@ -87,6 +99,7 @@ class RunManifest(BaseModel):
     ollama: OllamaConfig
     image_processing: ImageProcessingConfig
     options: ClassificationOptions
+    sampling: SamplingConfig
     counts: RunCounts
     started: str
     finished: str | None = None

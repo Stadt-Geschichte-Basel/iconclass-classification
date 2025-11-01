@@ -8,6 +8,7 @@ from iconclass_classification.models import (
     ClassificationOptions,
     ImageProcessingConfig,
     OllamaConfig,
+    SamplingConfig,
 )
 from iconclass_classification.pipeline import run_pipeline
 
@@ -57,10 +58,28 @@ def cli():
     help="Maximum number of codes to extract per image",
 )
 @click.option(
-    "--sample",
+    "--sampling-mode",
+    type=click.Choice(["random", "fixed", "full"]),
+    default="full",
+    help="Sampling mode: random, fixed IDs, or full dataset",
+)
+@click.option(
+    "--sampling-size",
     type=int,
     default=None,
-    help="Process only first N objects (for testing)",
+    help="Number of objects to sample (for random mode)",
+)
+@click.option(
+    "--sampling-seed",
+    type=int,
+    default=42,
+    help="Random seed for reproducible sampling",
+)
+@click.option(
+    "--fixed-ids-file",
+    type=str,
+    default=None,
+    help="Path to file with fixed object IDs (for fixed mode)",
 )
 @click.option(
     "--output",
@@ -93,7 +112,10 @@ def classify(
     max_side: int,
     quality: int,
     top_k: int | None,
-    sample: int | None,
+    sampling_mode: str,
+    sampling_size: int | None,
+    sampling_seed: int,
+    fixed_ids_file: str | None,
     output: Path,
     temperature: float,
     num_ctx: int,
@@ -101,10 +123,13 @@ def classify(
 ):
     """Classify images using Ollama Iconclass VLM.
 
+    Only processes children objects (m prefix). Parent objects (abb prefix) are
+    automatically filtered out.
+
     Example:
         python -m iconclass_classification.cli classify \\
             --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \\
-            --sample 3
+            --sampling-mode random --sampling-size 10
     """
     # Build configurations
     ollama_config = OllamaConfig(url=ollama_url, model=model)
@@ -114,6 +139,12 @@ def classify(
         num_ctx=num_ctx,
         num_predict=num_predict,
     )
+    sampling_config = SamplingConfig(
+        mode=sampling_mode,
+        size=sampling_size,
+        seed=sampling_seed,
+        fixed_ids_file=fixed_ids_file,
+    )
 
     # Run pipeline
     run_pipeline(
@@ -122,8 +153,8 @@ def classify(
         ollama_config=ollama_config,
         image_config=image_config,
         class_options=class_options,
+        sampling_config=sampling_config,
         top_k=top_k,
-        sample=sample,
     )
 
     click.echo(f"\nPipeline completed. Results saved to: {output}")

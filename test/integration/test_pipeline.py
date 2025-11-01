@@ -9,6 +9,7 @@ from iconclass_classification.models import (
     ClassificationOptions,
     ImageProcessingConfig,
     OllamaConfig,
+    SamplingConfig,
 )
 from iconclass_classification.pipeline import run_pipeline
 
@@ -73,7 +74,7 @@ def test_pipeline_structure(tmp_path, mock_metadata, mock_ollama_response):
             ollama_config=OllamaConfig(),
             image_config=ImageProcessingConfig(max_side=512),
             class_options=ClassificationOptions(),
-            sample=2,
+            sampling_config=SamplingConfig(mode="full"),
         )
 
         # Check that run directory was created

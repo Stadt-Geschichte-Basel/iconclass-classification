@@ -12,6 +12,11 @@ from typing import Any
 import requests
 from tqdm import tqdm
 
+from iconclass_classification.filtering import (
+    filter_children_only,
+    sample_objects,
+    validate_no_abb_in_sample,
+)
 from iconclass_classification.image_utils import (
     cache_image,
     compute_sha256,
@@ -30,6 +35,7 @@ from iconclass_classification.models import (
     OllamaConfig,
     RunCounts,
     RunManifest,
+    SamplingConfig,
     SubjectDetails,
 )
 from iconclass_classification.ollama_client import (
@@ -277,8 +283,8 @@ def run_pipeline(
     ollama_config: OllamaConfig,
     image_config: ImageProcessingConfig,
     class_options: ClassificationOptions,
+    sampling_config: SamplingConfig,
     top_k: int | None = None,
-    sample: int | None = None,
 ) -> None:
     """Run the complete classification pipeline.
 
@@ -288,8 +294,8 @@ def run_pipeline(
         ollama_config: Ollama configuration
         image_config: Image processing configuration
         class_options: Classification options
+        sampling_config: Sampling configuration
         top_k: Maximum number of codes per object
-        sample: Limit processing to first N objects
     """
     # Create run directory
     run_path, run_id = create_run_directory(output_dir)
@@ -311,6 +317,7 @@ def run_pipeline(
         ollama=ollama_config,
         image_processing=image_config,
         options=class_options,
+        sampling=sampling_config,
         counts=RunCounts(),
         started=started,
     )
@@ -321,10 +328,32 @@ def run_pipeline(
 
     # Parse metadata
     metadata = Metadata(**raw_metadata)
-    objects = metadata.objects[:sample] if sample else metadata.objects
+    all_objects = metadata.objects
 
-    manifest.counts.total = len(objects)
-    logger.info(f"Processing {len(objects)} objects")
+    manifest.counts.total = len(all_objects)
+    logger.info(f"Total objects in metadata: {len(all_objects)}")
+
+    # Filter to keep only children (m prefix), exclude parents (abb prefix)
+    filtered_objects, abb_count = filter_children_only(all_objects)
+    manifest.counts.abb_filtered = abb_count
+    manifest.counts.m_included = len(filtered_objects)
+    logger.info(
+        f"After filtering: {abb_count} abb objects excluded, "
+        f"{len(filtered_objects)} objects retained"
+    )
+
+    # Sample objects based on configuration
+    sampled_objects = sample_objects(filtered_objects, sampling_config)
+    manifest.counts.sampled = len(sampled_objects)
+    logger.info(
+        f"After sampling ({sampling_config.mode}): {len(sampled_objects)} objects"
+    )
+
+    # Fail-fast validation
+    validate_no_abb_in_sample(sampled_objects)
+
+    # Update metadata with filtered/sampled objects
+    objects = sampled_objects
 
     # Process each object
     details_file = run_path / "results" / "iconclass_details.jsonl"
