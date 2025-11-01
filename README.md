@@ -13,6 +13,9 @@ This project implements an automated, locally-hosted pipeline for classifying ar
 - 🎨 **Automated Iconclass Classification**: Uses the Iconclass VLM model via Ollama for accurate classification
 - 📦 **Batch Processing**: Process entire collections from metadata.json files
 - 🔄 **Smart Image Processing**: Automatic download, resize, normalization, and SHA256-based caching
+- 🎯 **Intelligent Filtering**: Automatically filters to process only children (m) objects, excluding parents (abb)
+- 🎲 **Flexible Sampling**: Random, fixed, or full dataset sampling modes with reproducible seeds
+- 📝 **Multiple Prompts**: Three prompt templates (default, instruction, few-shot) for optimal results
 - 📊 **Dual Output**: Compact codes in metadata + detailed JSONL records for auditability
 - 🔍 **Full Provenance**: Timestamped run directories with complete audit trail (requests, responses, manifests)
 - 🛡️ **Robust**: Built-in retry logic, comprehensive error handling, and logging
@@ -52,17 +55,25 @@ Classify images from Basel's digital collections:
 ```bash
 python -m iconclass_classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
-  --sample 3
+  --sampling-mode random \
+  --sampling-size 10
 ```
+
+**Important**: The pipeline automatically filters to only process children objects (m prefix). Parent objects (abb prefix) are excluded from classification.
 
 The pipeline will:
 
 1. Fetch metadata from the source URL
-2. Download and process images
-3. Classify each image with Ollama's Iconclass VLM
-4. Write results to `runs/<timestamp>/`
+2. Filter out abb (parent) objects, keep only m (children) objects
+3. Sample objects based on your configuration
+4. Download and process images
+5. Classify each image with Ollama's Iconclass VLM
+6. Write results to `runs/<timestamp>/`
 
-For detailed usage instructions, see [USAGE.md](USAGE.md).
+For detailed usage instructions and advanced features, see:
+
+- [USAGE.md](USAGE.md) - Complete usage guide
+- [training-and-prompting.md](documentation/training-and-prompting.md) - Prompt templates and troubleshooting
 
 ## Output Structure
 

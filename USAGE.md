@@ -51,23 +51,96 @@ This project implements an automated pipeline for classifying artwork images wit
 
 ## Usage
 
+### Important: Data Filtering
+
+**The pipeline automatically filters data to process only children objects:**
+
+- ✅ **Processes**: Objects with `m` prefix (children/individual objects)
+- ❌ **Excludes**: Objects with `abb` prefix (parents/aggregates)
+
+This filtering happens automatically before sampling. You don't need to pre-filter your data.
+
 ### Basic Usage
 
-Classify images from a metadata.json URL:
+Classify images from a metadata.json URL (processes all children objects):
 
 ```bash
 python -m iconclass_classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json
 ```
 
-### Test with Sample Data
+### Sampling Modes
 
-Process only the first 3 objects for testing:
+#### Random Sampling (recommended for testing)
+
+Process a random sample with a fixed seed for reproducibility:
 
 ```bash
 python -m iconclass_classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
-  --sample 3
+  --sampling-mode random \
+  --sampling-size 10 \
+  --sampling-seed 42
+```
+
+#### Fixed Sampling (specific objects)
+
+Process only specific objects listed in a file:
+
+```bash
+# Create file with object IDs (one per line)
+echo "m10039" > my_objects.txt
+echo "m10040" >> my_objects.txt
+
+python -m iconclass_classification classify \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --sampling-mode fixed \
+  --fixed-ids-file my_objects.txt
+```
+
+#### Full Dataset
+
+Process all children objects (default if no sampling specified):
+
+```bash
+python -m iconclass_classification classify \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --sampling-mode full
+```
+
+### Prompt Templates
+
+The pipeline includes three prompt templates optimized for different scenarios:
+
+#### Default (fastest, good for testing)
+
+```bash
+python -m iconclass_classification classify \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --prompt-template default \
+  --sampling-mode random --sampling-size 10
+```
+
+#### Instruction (recommended for production)
+
+More detailed instructions with explicit NONE fallback:
+
+```bash
+python -m iconclass_classification classify \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --prompt-template instruction \
+  --sampling-mode random --sampling-size 10
+```
+
+#### Few-Shot (best for complex images)
+
+Includes example classifications to guide the model:
+
+```bash
+python -m iconclass_classification classify \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --prompt-template few_shot \
+  --sampling-mode random --sampling-size 10
 ```
 
 ### Advanced Options
@@ -77,6 +150,10 @@ python -m iconclass_classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --ollama-url http://localhost:11434 \
+  --prompt-template instruction \
+  --sampling-mode random \
+  --sampling-size 100 \
+  --sampling-seed 42 \
   --max-side 1024 \
   --quality 92 \
   --top-k 5 \
@@ -88,19 +165,23 @@ python -m iconclass_classification classify \
 
 ### Command-Line Options
 
-| Option          | Default                                        | Description                         |
-| --------------- | ---------------------------------------------- | ----------------------------------- |
-| `--source`      | _required_                                     | URL to metadata.json                |
-| `--model`       | `hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M` | Ollama model name                   |
-| `--ollama-url`  | `http://localhost:11434`                       | Ollama service URL                  |
-| `--max-side`    | `1024`                                         | Maximum image side length in pixels |
-| `--quality`     | `92`                                           | JPEG quality (1-100)                |
-| `--top-k`       | `None`                                         | Maximum number of codes per image   |
-| `--sample`      | `None`                                         | Process only first N objects        |
-| `--output`      | `runs`                                         | Base output directory               |
-| `--temperature` | `0.0`                                          | Model temperature                   |
-| `--num-ctx`     | `4096`                                         | Context window size                 |
-| `--num-predict` | `128`                                          | Maximum tokens to predict           |
+| Option              | Default                                        | Description                                      |
+| ------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| `--source`          | _required_                                     | URL to metadata.json                             |
+| `--model`           | `hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M` | Ollama model name                                |
+| `--ollama-url`      | `http://localhost:11434`                       | Ollama service URL                               |
+| `--prompt-template` | `default`                                      | Prompt template (default, instruction, few_shot) |
+| `--sampling-mode`   | `full`                                         | Sampling mode (random, fixed, full)              |
+| `--sampling-size`   | `None`                                         | Number of objects to sample (random mode)        |
+| `--sampling-seed`   | `42`                                           | Random seed for reproducibility                  |
+| `--fixed-ids-file`  | `None`                                         | File with object IDs (fixed mode)                |
+| `--max-side`        | `1024`                                         | Maximum image side length in pixels              |
+| `--quality`         | `92`                                           | JPEG quality (1-100)                             |
+| `--top-k`           | `None`                                         | Maximum number of codes per image                |
+| `--output`          | `runs`                                         | Base output directory                            |
+| `--temperature`     | `0.0`                                          | Model temperature                                |
+| `--num-ctx`         | `4096`                                         | Context window size                              |
+| `--num-predict`     | `128`                                          | Maximum tokens to predict                        |
 
 ## Output Structure
 
@@ -244,6 +325,17 @@ The pipeline consists of several modular components:
 - **Resumability**: Each run is independent; failed runs can be retried
 
 ## Troubleshooting
+
+For detailed troubleshooting, see [training-and-prompting.md](documentation/training-and-prompting.md).
+
+### Empty Classifications
+
+If objects are returning no Iconclass codes:
+
+1. **Check the logs**: `runs/<timestamp>/logs/pipeline.log` contains debug information
+2. **Review responses**: Check `classify/<objectid>_response.json` for model output
+3. **Try different prompts**: Use `--prompt-template instruction` or `few_shot`
+4. **Inspect images**: Check `data/<objectid>.jpg` for quality issues
 
 ### Ollama Not Running
 
