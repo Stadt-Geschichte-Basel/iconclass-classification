@@ -1,5 +1,7 @@
 """Pydantic models for the Iconclass classification pipeline."""
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -44,8 +46,8 @@ class ImageProcessingConfig(BaseModel):
     """Configuration for image processing."""
 
     max_side: int = 1024
-    format: str = "JPEG"
-    colorspace: str = "RGB"
+    format: Literal["JPEG", "PNG", "WebP"] = "JPEG"
+    colorspace: Literal["RGB", "RGBA", "L"] = "RGB"
     quality: int = 92
 
 

@@ -357,8 +357,9 @@ def run_pipeline(
             logger.error(f"Error processing {obj.objectid}: {e}", exc_info=True)
             manifest.counts.errors += 1
 
-    # Save classified metadata
-    classified_metadata = metadata.model_dump()
+    # Save classified metadata while preserving extra fields
+    # Use model_dump() with mode='json' to handle extra fields properly
+    classified_metadata = metadata.model_dump(mode="json")
     classified_path = run_path / "results" / "metadata.classified.json"
     classified_path.write_text(json.dumps(classified_metadata, indent=2))
 

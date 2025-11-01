@@ -1,6 +1,7 @@
 """Ollama API client for Iconclass classification."""
 
 import base64
+import copy
 import json
 import re
 from pathlib import Path
@@ -137,7 +138,7 @@ def save_classification_artifacts(
     classify_dir.mkdir(parents=True, exist_ok=True)
 
     # Save request (strip base64 image data to save space)
-    request_copy = json.loads(json.dumps(request_payload))
+    request_copy = copy.deepcopy(request_payload)
     for message in request_copy.get("messages", []):
         if "images" in message:
             message["images"] = ["<base64-encoded-image>"]
