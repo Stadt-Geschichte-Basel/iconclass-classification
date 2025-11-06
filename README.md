@@ -50,10 +50,20 @@ pip install requests pillow tqdm pydantic tenacity click
 
 ### Basic Usage
 
-Classify images from Basel's digital collections:
+**Using Ollama (local):**
 
 ```bash
 python -m iconclass_classification classify \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --sampling-mode random \
+  --sampling-size 10
+```
+
+**Using OpenRouter (cloud):**
+
+```bash
+export OPENROUTER_API_KEY=your_key_here
+python -m iconclass_classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --sampling-mode random \
   --sampling-size 10
@@ -67,12 +77,12 @@ The pipeline will:
 2. Filter out abb (parent) objects, keep only m (children) objects
 3. Sample objects based on your configuration
 4. Download and process images
-5. Classify each image with Ollama's Iconclass VLM
+5. Classify each image with the selected backend (Ollama or OpenRouter)
 6. Write results to `runs/<timestamp>/`
 
 For detailed usage instructions and advanced features, see:
 
-- [USAGE.md](USAGE.md) - Complete usage guide
+- [USAGE.md](USAGE.md) - Complete usage guide for both backends
 - [training-and-prompting.md](documentation/training-and-prompting.md) - Prompt templates and troubleshooting
 
 ## Output Structure

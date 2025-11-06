@@ -1,14 +1,14 @@
 # Iconclass Classification Pipeline
 
-A reproducible pipeline to classify digital objects using the Iconclass VLM (Vision-Language Model) running under Ollama on local infrastructure.
+A reproducible pipeline to classify digital objects using Vision-Language Models for Iconclass classification. Supports both local (Ollama) and cloud-based (OpenRouter) backends.
 
 ## Overview
 
-This project implements an automated pipeline for classifying artwork images with [Iconclass](https://iconclass.org/) codes using a locally-hosted Ollama model. The pipeline downloads images, processes them, classifies them with the Iconclass VLM, and writes the results back to structured metadata files with full provenance tracking.
+This project implements an automated pipeline for classifying artwork images with [Iconclass](https://iconclass.org/) codes. The pipeline downloads images, processes them, classifies them using VLMs, and writes the results back to structured metadata files with full provenance tracking.
 
 ## Features
 
-- 🎨 **Iconclass Classification**: Automated classification using the Iconclass VLM model via Ollama
+- 🎨 **Multiple Backends**: Local (Ollama Iconclass VLM) or Cloud (OpenRouter Qwen3-VL)
 - 📦 **Batch Processing**: Process entire collections from metadata.json files
 - 🔄 **Image Processing**: Automatic download, resize, and normalization of images
 - 💾 **Smart Caching**: SHA256-based deduplication of downloaded images
@@ -21,12 +21,19 @@ This project implements an automated pipeline for classifying artwork images wit
 
 ### Prerequisites
 
+**For Ollama backend:**
+
 - Python ≥ 3.11
 - [Ollama](https://ollama.ai/) running locally
 - The Iconclass VLM model pulled in Ollama:
   ```bash
   ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
   ```
+
+**For OpenRouter backend:**
+
+- Python ≥ 3.11
+- OpenRouter API key from [openrouter.ai](https://openrouter.ai/)
 
 ### Setup
 
@@ -143,7 +150,45 @@ python -m iconclass_classification classify \
   --sampling-mode random --sampling-size 10
 ```
 
-### Advanced Options
+## OpenRouter Backend (Cloud-based)
+
+### Basic Usage
+
+To use OpenRouter with Qwen3-VL, you need an API key:
+
+```bash
+# Set your API key as environment variable
+export OPENROUTER_API_KEY=your_key_here
+
+# Run classification
+python -m iconclass_classification classify-openrouter \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --sampling-mode random --sampling-size 10
+```
+
+### With Different Models
+
+OpenRouter supports various models. You can specify a different model:
+
+```bash
+python -m iconclass_classification classify-openrouter \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model qwen/qwen-3-vl-235b-a22b-instruct \
+  --sampling-mode random --sampling-size 10
+```
+
+### Prompt Templates with OpenRouter
+
+Just like Ollama, you can use different prompt templates:
+
+```bash
+python -m iconclass_classification classify-openrouter \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --prompt-template instruction \
+  --sampling-mode random --sampling-size 10
+```
+
+### Advanced Options (Ollama)
 
 ```bash
 python -m iconclass_classification classify \
@@ -165,6 +210,8 @@ python -m iconclass_classification classify \
 
 ### Command-Line Options
 
+#### Ollama Backend (`classify`)
+
 | Option              | Default                                        | Description                                      |
 | ------------------- | ---------------------------------------------- | ------------------------------------------------ |
 | `--source`          | _required_                                     | URL to metadata.json                             |
@@ -182,6 +229,25 @@ python -m iconclass_classification classify \
 | `--temperature`     | `0.0`                                          | Model temperature                                |
 | `--num-ctx`         | `4096`                                         | Context window size                              |
 | `--num-predict`     | `128`                                          | Maximum tokens to predict                        |
+
+#### OpenRouter Backend (`classify-openrouter`)
+
+| Option              | Default                              | Description                                      |
+| ------------------- | ------------------------------------ | ------------------------------------------------ |
+| `--source`          | _required_                           | URL to metadata.json                             |
+| `--api-key`         | _required_ (or `OPENROUTER_API_KEY`) | OpenRouter API key                               |
+| `--model`           | `qwen/qwen-3-vl-235b-a22b-instruct`  | OpenRouter model name                            |
+| `--prompt-template` | `default`                            | Prompt template (default, instruction, few_shot) |
+| `--sampling-mode`   | `full`                               | Sampling mode (random, fixed, full)              |
+| `--sampling-size`   | `None`                               | Number of objects to sample (random mode)        |
+| `--sampling-seed`   | `42`                                 | Random seed for reproducibility                  |
+| `--fixed-ids-file`  | `None`                               | File with object IDs (fixed mode)                |
+| `--max-side`        | `2048`                               | Maximum image side length in pixels              |
+| `--quality`         | `92`                                 | JPEG quality (1-100)                             |
+| `--top-k`           | `None`                               | Maximum number of codes per image                |
+| `--output`          | `runs`                               | Base output directory                            |
+| `--temperature`     | `0.0`                                | Model temperature                                |
+| `--num-predict`     | `128`                                | Maximum tokens to predict                        |
 
 ## Output Structure
 

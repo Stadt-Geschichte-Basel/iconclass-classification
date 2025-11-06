@@ -1,23 +1,37 @@
 # Training and Prompting Guide for Iconclass VLM
 
-This document provides guidance on training, fine-tuning, and effective prompting for the Iconclass Vision-Language Model (VLM).
+This document provides guidance on training, fine-tuning, and effective prompting for Iconclass Vision-Language Models across different backends.
 
-## Resources
+## Supported Backends
 
-### Iconclass VLM Model
+### 1. Ollama (Local)
 
-- **HuggingFace Model**: [small-models-for-glam/iconclass-vlm](https://huggingface.co/small-models-for-glam/iconclass-vlm)
+- **Iconclass VLM Model**: [small-models-for-glam/iconclass-vlm](https://huggingface.co/small-models-for-glam/iconclass-vlm)
   - Pre-trained vision-language model specialized for Iconclass classification
   - Based on fine-tuned VLM architecture
   - Optimized for GLAM (Galleries, Libraries, Archives, Museums) domain
+  - **Blog Post**: [Fine-tuning VLMs for Iconclass with TRL](https://danielvanstrien.xyz/posts/2025/iconclass-vlm-sft/trl-vlm-fine-tuning-iconclass.html) by Daniel van Strien
 
-### Training Guide
+### 2. OpenRouter (Cloud)
 
-- **Blog Post**: [Fine-tuning VLMs for Iconclass with TRL](https://danielvanstrien.xyz/posts/2025/iconclass-vlm-sft/trl-vlm-fine-tuning-iconclass.html) by Daniel van Strien
-  - Detailed walkthrough of fine-tuning process
-  - Uses TRL (Transformer Reinforcement Learning) library
-  - Includes code examples and best practices
-  - Covers data preparation and training configuration
+- **Qwen3-VL**: [Qwen3-VL-235B-A22B-Instruct](https://openrouter.ai/qwen/qwen-3-vl-235b-a22b-instruct)
+  - State-of-the-art multimodal model for vision-language tasks
+  - Accessible via OpenRouter API
+  - Large context window and strong performance on classification tasks
+  - **Official Repo**: [QwenLM/Qwen3-VL](https://github.com/QwenLM/Qwen3-VL)
+  - **OpenRouter Docs**: [openrouter.ai/docs](https://openrouter.ai/docs)
+
+## Choosing a Backend
+
+| Feature         | Ollama (Local)                | OpenRouter (Cloud)             |
+| --------------- | ----------------------------- | ------------------------------ |
+| **Cost**        | Free (local compute)          | Pay per API call               |
+| **Privacy**     | Complete data privacy         | Data sent to cloud             |
+| **Performance** | Depends on local hardware     | Consistent, high performance   |
+| **Setup**       | Requires Ollama + model pull  | Just API key                   |
+| **Best for**    | Large batches, sensitive data | Quick testing, smaller batches |
+
+## Resources
 
 ## Data Filtering Best Practices
 
