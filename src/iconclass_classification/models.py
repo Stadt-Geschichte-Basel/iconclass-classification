@@ -58,6 +58,15 @@ class OllamaConfig(BaseModel):
     model: str = "hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M"
 
 
+class OpenRouterConfig(BaseModel):
+    """OpenRouter service configuration."""
+
+    api_key: str
+    model: str = "qwen/qwen-3-vl-235b-a22b-instruct"
+    api_url: str = "https://openrouter.ai/api/v1/chat/completions"
+    max_image_size: int = 2048  # Max dimension for image resize
+
+
 class ClassificationOptions(BaseModel):
     """Classification options."""
 
@@ -96,7 +105,9 @@ class RunManifest(BaseModel):
     git_commit: str | None = None
     python: str
     platform: str
-    ollama: OllamaConfig
+    backend: Literal["ollama", "openrouter"]
+    ollama: OllamaConfig | None = None
+    openrouter: OpenRouterConfig | None = None
     image_processing: ImageProcessingConfig
     options: ClassificationOptions
     sampling: SamplingConfig

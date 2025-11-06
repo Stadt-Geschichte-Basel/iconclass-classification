@@ -33,16 +33,13 @@ from iconclass_classification.models import (
     Metadata,
     MetadataObject,
     OllamaConfig,
+    OpenRouterConfig,
     RunCounts,
     RunManifest,
     SamplingConfig,
     SubjectDetails,
 )
-from iconclass_classification.ollama_client import (
-    classify_image,
-    extract_codes,
-    save_classification_artifacts,
-)
+from iconclass_classification.ollama_client import extract_codes
 from iconclass_classification.prompting import get_prompts, log_empty_response_debug
 
 logger = logging.getLogger(__name__)
@@ -177,7 +174,9 @@ def select_image_url(obj: MetadataObject) -> str | None:
 def process_object(
     obj: MetadataObject,
     run_path: Path,
-    ollama_config: OllamaConfig,
+    backend: str,
+    ollama_config: OllamaConfig | None,
+    openrouter_config: OpenRouterConfig | None,
     image_config: ImageProcessingConfig,
     class_options: ClassificationOptions,
     prompt_template: str = "default",
@@ -188,7 +187,9 @@ def process_object(
     Args:
         obj: Metadata object to process
         run_path: Run directory path
-        ollama_config: Ollama configuration
+        backend: Classification backend ('ollama' or 'openrouter')
+        ollama_config: Ollama configuration (if backend is ollama)
+        openrouter_config: OpenRouter configuration (if backend is openrouter)
         image_config: Image processing configuration
         class_options: Classification options
         prompt_template: Prompt template to use
@@ -223,34 +224,74 @@ def process_object(
     processed_path = run_path / "data" / f"{objectid}.jpg"
     processed_path.write_bytes(processed_bytes)
 
-    # Classify with Ollama
-    logger.info(f"Classifying {objectid} with Ollama (template={prompt_template})")
-    response = classify_image(
-        processed_bytes,
-        ollama_config.model,
-        ollama_config.url,
-        class_options,
-        prompt_template=prompt_template,
-    )
+    # Classify based on backend
+    if backend == "ollama":
+        logger.info(f"Classifying {objectid} with Ollama (template={prompt_template})")
+        import iconclass_classification.ollama_client as ollama
+
+        response = ollama.classify_image(
+            processed_bytes,
+            ollama_config.model,
+            ollama_config.url,
+            class_options,
+            prompt_template=prompt_template,
+        )
+        model_name = ollama_config.model
+    elif backend == "openrouter":
+        logger.info(
+            f"Classifying {objectid} with OpenRouter (template={prompt_template})"
+        )
+        import iconclass_classification.openrouter_client as openrouter
+
+        response = openrouter.classify_image(
+            processed_bytes,
+            openrouter_config,
+            class_options,
+            prompt_template=prompt_template,
+        )
+        model_name = openrouter_config.model
+    else:
+        raise ValueError(f"Unknown backend: {backend}")
 
     # Get prompts for saving
     system_prompt, user_prompt = get_prompts(prompt_template)
 
     # Save classification artifacts
-    save_classification_artifacts(
-        objectid,
-        {
-            "model": ollama_config.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "options": class_options.model_dump(),
-            "prompt_template": prompt_template,
-        },
-        response,
-        run_path / "classify",
-    )
+    if backend == "ollama":
+        import iconclass_classification.ollama_client as ollama
+
+        ollama.save_classification_artifacts(
+            objectid,
+            {
+                "model": model_name,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "options": class_options.model_dump(),
+                "prompt_template": prompt_template,
+            },
+            response,
+            run_path / "classify",
+        )
+    elif backend == "openrouter":
+        import iconclass_classification.openrouter_client as openrouter
+
+        openrouter.save_classification_artifacts(
+            objectid,
+            {
+                "model": model_name,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "temperature": class_options.temperature,
+                "max_tokens": class_options.num_predict,
+                "prompt_template": prompt_template,
+            },
+            response,
+            run_path / "classify",
+        )
 
     # Extract codes
     raw_text = response.get("message", {}).get("content", "")
@@ -271,7 +312,7 @@ def process_object(
     details = IconclassDetails(
         codes=codes,
         top_k=top_k_ranks,
-        model=ollama_config.model,
+        model=model_name,
         prompt=user_prompt,
         temperature=class_options.temperature,
         num_ctx=class_options.num_ctx,
@@ -294,7 +335,9 @@ def process_object(
 def run_pipeline(
     source_url: str,
     output_dir: Path,
-    ollama_config: OllamaConfig,
+    backend: str,
+    ollama_config: OllamaConfig | None,
+    openrouter_config: OpenRouterConfig | None,
     image_config: ImageProcessingConfig,
     class_options: ClassificationOptions,
     sampling_config: SamplingConfig,
@@ -306,7 +349,9 @@ def run_pipeline(
     Args:
         source_url: URL to metadata.json
         output_dir: Base output directory for runs
-        ollama_config: Ollama configuration
+        backend: Classification backend ('ollama' or 'openrouter')
+        ollama_config: Ollama configuration (if backend is ollama)
+        openrouter_config: OpenRouter configuration (if backend is openrouter)
         image_config: Image processing configuration
         class_options: Classification options
         sampling_config: Sampling configuration
@@ -321,6 +366,7 @@ def run_pipeline(
 
     logger.info("Starting Iconclass classification pipeline")
     logger.info(f"Run ID: {run_id}")
+    logger.info(f"Backend: {backend}")
 
     # Initialize manifest
     started = datetime.now(UTC).isoformat()
@@ -330,7 +376,9 @@ def run_pipeline(
         git_commit=get_git_commit(),
         python=f"{sys.version_info.major}.{sys.version_info.minor}",
         platform=f"{platform.system()} {platform.machine()}",
-        ollama=ollama_config,
+        backend=backend,
+        ollama=ollama_config if backend == "ollama" else None,
+        openrouter=openrouter_config if backend == "openrouter" else None,
         image_processing=image_config,
         options=class_options,
         sampling=sampling_config,
@@ -381,7 +429,9 @@ def run_pipeline(
             codes, record = process_object(
                 obj,
                 run_path,
+                backend,
                 ollama_config,
+                openrouter_config,
                 image_config,
                 class_options,
                 prompt_template=prompt_template,

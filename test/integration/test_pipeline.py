@@ -59,7 +59,7 @@ def test_pipeline_structure(tmp_path, mock_metadata, mock_ollama_response):
     with (
         patch("iconclass_classification.pipeline.fetch_metadata") as mock_fetch,
         patch("iconclass_classification.pipeline.download_image") as mock_download,
-        patch("iconclass_classification.pipeline.classify_image") as mock_classify,
+        patch("iconclass_classification.ollama_client.classify_image") as mock_classify,
     ):
         # Setup mocks
         mock_fetch.return_value = mock_metadata
@@ -71,7 +71,9 @@ def test_pipeline_structure(tmp_path, mock_metadata, mock_ollama_response):
         run_pipeline(
             source_url="https://example.com/metadata.json",
             output_dir=output_dir,
+            backend="ollama",
             ollama_config=OllamaConfig(),
+            openrouter_config=None,
             image_config=ImageProcessingConfig(max_side=512),
             class_options=ClassificationOptions(),
             sampling_config=SamplingConfig(mode="full"),
