@@ -26,6 +26,7 @@ This project implements an automated pipeline for classifying artwork images wit
 - Python ≥ 3.11
 - [Ollama](https://ollama.ai/) running locally
 - The Iconclass VLM model pulled in Ollama:
+
   ```bash
   ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
   ```
@@ -35,7 +36,7 @@ This project implements an automated pipeline for classifying artwork images wit
 - Python ≥ 3.11
 - OpenRouter API key from [openrouter.ai](https://openrouter.ai/)
 
-### Setup
+### Setup (with uv)
 
 1. Clone the repository:
 
@@ -44,17 +45,26 @@ This project implements an automated pipeline for classifying artwork images wit
    cd iconclass-classification
    ```
 
-2. Create and activate a virtual environment:
+2. Install uv if needed:
 
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# or: pip install uv
+```
 
-3. Install dependencies:
-   ```bash
-   pip install -e .
-   ```
+1. Sync dependencies (creates and populates `.venv`):
+
+```bash
+uv sync
+# (Optional) include dev tools (ruff, ty, pytest)
+uv sync --group dev
+```
+
+1. Verify CLI is available:
+
+```bash
+uv run iconclass-classification --help
+```
 
 ## Usage
 
@@ -67,12 +77,12 @@ This project implements an automated pipeline for classifying artwork images wit
 
 This filtering happens automatically before sampling. You don't need to pre-filter your data.
 
-### Basic Usage
+### Basic Usage (OpenRouter)
 
 Classify images from a metadata.json URL (processes all children objects):
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json
 ```
 
@@ -83,7 +93,7 @@ python -m iconclass_classification classify \
 Process a random sample with a fixed seed for reproducibility:
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --sampling-mode random \
   --sampling-size 10 \
@@ -99,7 +109,7 @@ Process only specific objects listed in a file:
 echo "m10039" > my_objects.txt
 echo "m10040" >> my_objects.txt
 
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --sampling-mode fixed \
   --fixed-ids-file my_objects.txt
@@ -110,7 +120,7 @@ python -m iconclass_classification classify \
 Process all children objects (default if no sampling specified):
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --sampling-mode full
 ```
@@ -122,7 +132,7 @@ The pipeline includes three prompt templates optimized for different scenarios:
 #### Default (fastest, good for testing)
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --prompt-template default \
   --sampling-mode random --sampling-size 10
@@ -133,7 +143,7 @@ python -m iconclass_classification classify \
 More detailed instructions with explicit NONE fallback:
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --prompt-template instruction \
   --sampling-mode random --sampling-size 10
@@ -144,7 +154,7 @@ python -m iconclass_classification classify \
 Includes example classifications to guide the model:
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --prompt-template few_shot \
   --sampling-mode random --sampling-size 10
@@ -161,7 +171,7 @@ To use OpenRouter with Qwen3-VL, you need an API key:
 export OPENROUTER_API_KEY=your_key_here
 
 # Run classification
-python -m iconclass_classification classify-openrouter \
+uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --sampling-mode random --sampling-size 10
 ```
@@ -171,7 +181,7 @@ python -m iconclass_classification classify-openrouter \
 OpenRouter supports various models. You can specify a different model:
 
 ```bash
-python -m iconclass_classification classify-openrouter \
+uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --model qwen/qwen-3-vl-235b-a22b-instruct \
   --sampling-mode random --sampling-size 10
@@ -182,7 +192,7 @@ python -m iconclass_classification classify-openrouter \
 Just like Ollama, you can use different prompt templates:
 
 ```bash
-python -m iconclass_classification classify-openrouter \
+uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --prompt-template instruction \
   --sampling-mode random --sampling-size 10
@@ -191,7 +201,7 @@ python -m iconclass_classification classify-openrouter \
 ### Advanced Options (Ollama)
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --ollama-url http://localhost:11434 \
@@ -253,7 +263,7 @@ python -m iconclass_classification classify \
 
 Each run creates a timestamped directory with the following structure:
 
-```
+```text
 runs/<UTC-ISO8601>/
   raw/
     metadata.json              # Original metadata
@@ -316,32 +326,35 @@ One JSON record per line with complete metadata:
 
 ## Development
 
-### Running Tests
+### Running Tests (uv)
 
 ```bash
-# Install dev dependencies
-pip install pytest
+# Ensure dev dependencies installed
+uv sync --group dev
 
 # Run tests
-pytest test/ -v
+uv run pytest test/ -v
 ```
 
 ### Code Quality
 
 ```bash
 # Format code
-ruff format .
+uv run ruff format .
 
 # Check code
-ruff check .
+uv run ruff check .
 
 # Auto-fix issues
-ruff check --fix .
+uv run ruff check --fix .
+
+# (Optional) Type check
+uv run ty check
 ```
 
 ## Project Structure
 
-```
+```text
 src/iconclass_classification/
   __init__.py           # Package initialization
   __main__.py           # Entry point
@@ -424,10 +437,10 @@ ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
 Reduce image size or batch size:
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source <URL> \
   --max-side 512 \
-  --sample 10
+  --sampling-mode random --sampling-size 10
 ```
 
 ## Contributing

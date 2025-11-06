@@ -18,6 +18,7 @@ dependencies = [
 dev = [
     "ruff>=0.14.0",
     "ty>=0.0.1a22",
+  "pytest>=8.0.0",
 ]
 
 [tool.ruff]
@@ -46,3 +47,13 @@ known-first-party = ["iconclass_classification"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[project.scripts]
+iconclass-classification = "iconclass_classification.cli:cli"
+
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true

@@ -29,23 +29,39 @@ This project implements an automated, locally-hosted pipeline for classifying ar
 - Python ≥ 3.11
 - [Ollama](https://ollama.ai/) running locally
 - The Iconclass VLM model:
-  ```bash
-  ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
-  ```
 
-### Installation
+```bash
+ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
+```
+
+### Installation (with uv)
+
+We use the fast Python package manager [uv](https://github.com/astral-sh/uv) for reproducible environments.
 
 ```bash
 # Clone the repository
 git clone https://github.com/Stadt-Geschichte-Basel/iconclass-classification.git
 cd iconclass-classification
 
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# (Optional) Install uv if you don't have it yet
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# or: pip install uv
 
-# Install dependencies
-pip install requests pillow tqdm pydantic tenacity click
+# Sync all project dependencies (creates .venv automatically)
+uv sync
+
+# Ensure dev tools (ruff, ty, pytest)
+uv sync --group dev
+
+# Show CLI help
+uv run iconclass-classification --help
+```
+
+You can also activate the environment manually if you prefer:
+
+```bash
+source .venv/bin/activate
+iconclass-classification --help
 ```
 
 ### Basic Usage
@@ -53,7 +69,7 @@ pip install requests pillow tqdm pydantic tenacity click
 **Using Ollama (local):**
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --sampling-mode random \
   --sampling-size 10
@@ -63,7 +79,7 @@ python -m iconclass_classification classify \
 
 ```bash
 export OPENROUTER_API_KEY=your_key_here
-python -m iconclass_classification classify-openrouter \
+uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --sampling-mode random \
   --sampling-size 10
@@ -89,7 +105,7 @@ For detailed usage instructions and advanced features, see:
 
 Each run creates a timestamped directory with complete provenance:
 
-```
+```text
 runs/<UTC-ISO8601>/
   raw/metadata.json              # Original metadata
   data/
@@ -137,7 +153,7 @@ runs/<UTC-ISO8601>/
 
 The pipeline is modular and consists of these components:
 
-```
+```text
 src/iconclass_classification/
   models.py         # Pydantic data models
   image_utils.py    # Image download & processing
@@ -159,38 +175,41 @@ src/iconclass_classification/
 
 ## Development
 
-### Running Tests
+### Running Tests (uv)
 
 ```bash
-# Install test dependencies
-pip install pytest
+# Ensure dev dependencies are installed
+uv sync --group dev
 
 # Run all tests
-PYTHONPATH=src:$PYTHONPATH pytest test/ -v
+uv run pytest test/ -v
 
 # Run only unit tests
-PYTHONPATH=src:$PYTHONPATH pytest test/unit/ -v
+uv run pytest test/unit/ -v
 
 # Run only integration tests
-PYTHONPATH=src:$PYTHONPATH pytest test/integration/ -v
+uv run pytest test/integration/ -v
 ```
 
-### Code Quality
+### Code Quality (uv)
 
 ```bash
 # Format Python code
-ruff format .
+uv run ruff format .
 
 # Check Python code
-ruff check .
+uv run ruff check .
 
 # Auto-fix issues
-ruff check --fix .
+uv run ruff check --fix .
 
-# Format all files
+# (Optional) Type check
+uv run ty check
+
+# Format all non-Python files (Prettier)
 npm run format
 
-# Check all files
+# Check all non-Python files
 npm run check
 ```
 
@@ -217,7 +236,7 @@ ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
 Reduce image size or use sample mode:
 
 ```bash
-python -m iconclass_classification classify \
+uv run iconclass-classification classify \
   --source <URL> \
   --max-side 512 \
   --sample 10
