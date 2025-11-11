@@ -61,8 +61,9 @@ uv run iconclass-classification --help
 **Using Ollama (local):**
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --sampling-mode random \
   --sampling-size 10
 ```
@@ -73,6 +74,7 @@ uv run iconclass-classification classify \
 export OPENROUTER_API_KEY=your_key_here
 uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model qwen/qwen3-vl-235b-a22b-instruct \
   --sampling-mode random \
   --sampling-size 10
 ```
@@ -91,6 +93,7 @@ set -a; source .env; set +a
 # Run with OpenRouter
 uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model qwen/qwen3-vl-235b-a22b-instruct \
   --sampling-mode random \
   --sampling-size 10
 ```
@@ -253,8 +256,9 @@ ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
 Reduce image size or use sample mode:
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source <URL> \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --max-side 512 \
   --sample 10
 ```

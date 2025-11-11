@@ -171,6 +171,10 @@ def classify(
     click.echo(f"\nPipeline completed. Results saved to: {output}")
 
 
+# Provide an alias so docs can use `classify-ollama`
+cli.add_command(classify, name="classify-ollama")
+
+
 @cli.command()
 @click.option(
     "--source",
@@ -188,7 +192,7 @@ def classify(
 @click.option(
     "--model",
     type=str,
-    default="qwen/qwen-3-vl-235b-a22b-instruct",
+    default="qwen/qwen3-vl-235b-a22b-instruct",
     help="OpenRouter model name",
 )
 @click.option(

@@ -62,7 +62,7 @@ class OpenRouterConfig(BaseModel):
     """OpenRouter service configuration."""
 
     api_key: str
-    model: str = "qwen/qwen-3-vl-235b-a22b-instruct"
+    model: str = "qwen/qwen3-vl-235b-a22b-instruct"
     api_url: str = "https://openrouter.ai/api/v1/chat/completions"
     max_image_size: int = 2048  # Max dimension for image resize
 

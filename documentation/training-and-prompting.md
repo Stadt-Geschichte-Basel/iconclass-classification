@@ -14,7 +14,7 @@ This document provides guidance on training, fine-tuning, and effective promptin
 
 ### 2. OpenRouter (Cloud)
 
-- **Qwen3-VL**: [Qwen3-VL-235B-A22B-Instruct](https://openrouter.ai/qwen/qwen-3-vl-235b-a22b-instruct)
+- **Qwen3-VL**: [Qwen3-VL-235B-A22B-Instruct](https://openrouter.ai/qwen/qwen3-vl-235b-a22b-instruct)
   - State-of-the-art multimodal model for vision-language tasks
   - Accessible via OpenRouter API
   - Large context window and strong performance on classification tasks

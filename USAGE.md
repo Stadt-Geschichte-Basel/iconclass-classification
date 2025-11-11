@@ -82,8 +82,9 @@ This filtering happens automatically before sampling. You don't need to pre-filt
 Classify images from a metadata.json URL (processes all children objects):
 
 ```bash
-uv run iconclass-classification classify \
-  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json
+uv run iconclass-classification classify-ollama \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
 ```
 
 ### Sampling Modes
@@ -93,8 +94,9 @@ uv run iconclass-classification classify \
 Process a random sample with a fixed seed for reproducibility:
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --sampling-mode random \
   --sampling-size 10 \
   --sampling-seed 42
@@ -109,8 +111,9 @@ Process only specific objects listed in a file:
 echo "m10039" > my_objects.txt
 echo "m10040" >> my_objects.txt
 
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --sampling-mode fixed \
   --fixed-ids-file my_objects.txt
 ```
@@ -120,8 +123,9 @@ uv run iconclass-classification classify \
 Process all children objects (default if no sampling specified):
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --sampling-mode full
 ```
 
@@ -132,8 +136,9 @@ The pipeline includes three prompt templates optimized for different scenarios:
 #### Default (fastest, good for testing)
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --prompt-template default \
   --sampling-mode random --sampling-size 10
 ```
@@ -143,8 +148,9 @@ uv run iconclass-classification classify \
 More detailed instructions with explicit NONE fallback:
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --prompt-template instruction \
   --sampling-mode random --sampling-size 10
 ```
@@ -154,8 +160,9 @@ uv run iconclass-classification classify \
 Includes example classifications to guide the model:
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --prompt-template few_shot \
   --sampling-mode random --sampling-size 10
 ```
@@ -173,6 +180,7 @@ export OPENROUTER_API_KEY=your_key_here
 # Run classification
 uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model qwen/qwen3-vl-235b-a22b-instruct \
   --sampling-mode random --sampling-size 10
 ```
 
@@ -190,6 +198,7 @@ set -a; source .env; set +a
 # Run with OpenRouter
 uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --model qwen/qwen3-vl-235b-a22b-instruct \
   --sampling-mode random --sampling-size 10
 ```
 
@@ -200,12 +209,12 @@ Notes:
 
 ### With Different Models
 
-OpenRouter supports various models. You can specify a different model:
+OpenRouter supports various models. You can specify a different model (example with Qwen3-VL 235B):
 
 ```bash
 uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
-  --model qwen/qwen-3-vl-235b-a22b-instruct \
+  --model qwen/qwen3-vl-235b-a22b-instruct \
   --sampling-mode random --sampling-size 10
 ```
 
@@ -223,7 +232,7 @@ uv run iconclass-classification classify-openrouter \
 ### Advanced Options (Ollama)
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --ollama-url http://localhost:11434 \
@@ -268,7 +277,7 @@ uv run iconclass-classification classify \
 | ------------------- | ------------------------------------ | ------------------------------------------------ |
 | `--source`          | _required_                           | URL to metadata.json                             |
 | `--api-key`         | _required_ (or `OPENROUTER_API_KEY`) | OpenRouter API key                               |
-| `--model`           | `qwen/qwen-3-vl-235b-a22b-instruct`  | OpenRouter model name                            |
+| `--model`           | `qwen/qwen3-vl-235b-a22b-instruct`   | OpenRouter model name                            |
 | `--prompt-template` | `default`                            | Prompt template (default, instruction, few_shot) |
 | `--sampling-mode`   | `full`                               | Sampling mode (random, fixed, full)              |
 | `--sampling-size`   | `None`                               | Number of objects to sample (random mode)        |
@@ -461,8 +470,9 @@ ollama pull hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M
 Reduce image size or batch size:
 
 ```bash
-uv run iconclass-classification classify \
+uv run iconclass-classification classify-ollama \
   --source <URL> \
+  --model hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M \
   --max-side 512 \
   --sampling-mode random --sampling-size 10
 ```

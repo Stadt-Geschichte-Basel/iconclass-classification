@@ -65,15 +65,18 @@ def classify_image(
 
     # Build OpenRouter request payload following their multimodal format
     # Reference: https://openrouter.ai/docs#vision
+    # Use input_text/input_image types which are broadly supported across models.
+    # Allow backward compatibility if user passes the older model ID variant
+    model_id = config.model.replace("qwen/qwen-3-vl", "qwen/qwen3-vl")
     payload = {
-        "model": config.model,
+        "model": model_id,
         "messages": [
             {"role": "system", "content": system_prompt},
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": user_prompt},
-                    {"type": "image_url", "image_url": {"url": image_data_uri}},
+                    {"type": "input_text", "text": user_prompt},
+                    {"type": "input_image", "image_url": image_data_uri},
                 ],
             },
         ],
@@ -97,7 +100,18 @@ def classify_image(
         headers=headers,
         timeout=timeout,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        # Log detailed error body to aid debugging (e.g., schema validation errors)
+        try:
+            err_body = response.json()
+        except Exception:
+            err_body = response.text
+        logger.error(
+            "OpenRouter request failed (%s): %s", response.status_code, err_body
+        )
+        raise
 
     result = response.json()
 
