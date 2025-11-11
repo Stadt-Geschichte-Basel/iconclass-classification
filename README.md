@@ -45,7 +45,6 @@ cd iconclass-classification
 
 # (Optional) Install uv if you don't have it yet
 curl -LsSf https://astral.sh/uv/install.sh | sh
-# or: pip install uv
 
 # Sync all project dependencies (creates .venv automatically)
 uv sync
@@ -55,13 +54,6 @@ uv sync --group dev
 
 # Show CLI help
 uv run iconclass-classification --help
-```
-
-You can also activate the environment manually if you prefer:
-
-```bash
-source .venv/bin/activate
-iconclass-classification --help
 ```
 
 ### Basic Usage
@@ -84,6 +76,29 @@ uv run iconclass-classification classify-openrouter \
   --sampling-mode random \
   --sampling-size 10
 ```
+
+#### Using a .env file for OpenRouter
+
+You can store your API key in a local `.env` file and load it for the session (recommended on macOS/Linux with zsh):
+
+```bash
+# Create .env at the project root
+echo 'OPENROUTER_API_KEY=your_key_here' > .env
+
+# Load all variables from .env into the environment for this shell
+set -a; source .env; set +a
+
+# Run with OpenRouter
+uv run iconclass-classification classify-openrouter \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --sampling-mode random \
+  --sampling-size 10
+```
+
+Notes:
+
+- Keep `.env` out of version control. Do not commit secrets. An `example.env` file is provided as a template.
+- Alternatively, export the variable once per session using `export OPENROUTER_API_KEY=...`.
 
 **Important**: The pipeline automatically filters to only process children objects (m prefix). Parent objects (abb prefix) are excluded from classification.
 
@@ -125,27 +140,29 @@ runs/<UTC-ISO8601>/
 
 **Compact metadata** (`metadata.classified.json`):
 
+<!-- prettier-ignore -->
 ```json
 {
-	"objectid": "abb10039",
-	"title": "Die Löblich und wyt berümpt Stat Basel",
-	"subject": ["71H7131", "25F2"]
+  "objectid": "abb10039",
+  "title": "Die Löblich und wyt berümpt Stat Basel",
+  "subject": ["71H7131", "25F2"]
 }
 ```
 
 **Detailed record** (`iconclass_details.jsonl`):
 
+<!-- prettier-ignore -->
 ```json
 {
-	"objectid": "abb10039",
-	"subject": {
-		"iconclass": {
-			"codes": ["71H7131", "25F2"],
-			"model": "hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M",
-			"image_sha256": "...",
-			"timestamp": "2025-11-01T10:00:00Z"
-		}
-	}
+  "objectid": "abb10039",
+  "subject": {
+    "iconclass": {
+      "codes": ["71H7131", "25F2"],
+      "model": "hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M",
+      "image_sha256": "...",
+      "timestamp": "2025-11-01T10:00:00Z"
+    }
+  }
 }
 ```
 

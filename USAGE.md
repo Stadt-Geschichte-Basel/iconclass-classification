@@ -77,7 +77,7 @@ uv run iconclass-classification --help
 
 This filtering happens automatically before sampling. You don't need to pre-filter your data.
 
-### Basic Usage (OpenRouter)
+### Basic Usage (Ollama)
 
 Classify images from a metadata.json URL (processes all children objects):
 
@@ -175,6 +175,28 @@ uv run iconclass-classification classify-openrouter \
   --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
   --sampling-mode random --sampling-size 10
 ```
+
+### Using a .env file (recommended)
+
+Store your API key in a local `.env` file and load it for your shell session (zsh on macOS/Linux):
+
+```bash
+# Create .env at the project root
+echo 'OPENROUTER_API_KEY=your_key_here' > .env
+
+# Export variables from .env into the environment
+set -a; source .env; set +a
+
+# Run with OpenRouter
+uv run iconclass-classification classify-openrouter \
+  --source https://forschung.stadtgeschichtebasel.ch/assets/data/metadata.json \
+  --sampling-mode random --sampling-size 10
+```
+
+Notes:
+
+- Do not commit `.env` to version control.
+- You can also provide the key once per session with `export OPENROUTER_API_KEY=...`.
 
 ### With Different Models
 
@@ -287,11 +309,12 @@ runs/<UTC-ISO8601>/
 
 Each object gains a flat `subject` array with Iconclass codes:
 
+<!-- prettier-ignore -->
 ```json
 {
-	"objectid": "abb10039",
-	"title": "Die Löblich und wyt berümpt Stat Basel",
-	"subject": ["71H7131", "25F2"]
+  "objectid": "abb10039",
+  "title": "Die Löblich und wyt berümpt Stat Basel",
+  "subject": ["71H7131", "25F2"]
 }
 ```
 
@@ -299,28 +322,29 @@ Each object gains a flat `subject` array with Iconclass codes:
 
 One JSON record per line with complete metadata:
 
+<!-- prettier-ignore -->
 ```json
 {
-	"objectid": "abb10039",
-	"subject": {
-		"iconclass": {
-			"codes": ["71H7131", "25F2"],
-			"top_k": [
-				{ "code": "71H7131", "rank": 1 },
-				{ "code": "25F2", "rank": 2 }
-			],
-			"model": "hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M",
-			"prompt": "Generate Iconclass labels for this image",
-			"temperature": 0.0,
-			"num_ctx": 4096,
-			"num_predict": 128,
-			"raw_text": "<model output>",
-			"image_sha256": "<sha256>",
-			"image_source": "<URL>",
-			"processed_image_path": "data/abb10039.jpg",
-			"timestamp": "2025-11-01T10:00:00Z"
-		}
-	}
+  "objectid": "abb10039",
+  "subject": {
+    "iconclass": {
+      "codes": ["71H7131", "25F2"],
+      "top_k": [
+        { "code": "71H7131", "rank": 1 },
+        { "code": "25F2", "rank": 2 }
+      ],
+      "model": "hf.co/mradermacher/iconclass-vlm-GGUF:Q4_K_M",
+      "prompt": "Generate Iconclass labels for this image",
+      "temperature": 0.0,
+      "num_ctx": 4096,
+      "num_predict": 128,
+      "raw_text": "<model output>",
+      "image_sha256": "<sha256>",
+      "image_source": "<URL>",
+      "processed_image_path": "data/abb10039.jpg",
+      "timestamp": "2025-11-01T10:00:00Z"
+    }
+  }
 }
 ```
 
