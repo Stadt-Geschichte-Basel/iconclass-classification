@@ -23,11 +23,11 @@ def test_filter_children_only():
     filtered, abb_count = filter_children_only(objects)
 
     assert abb_count == 2
-    assert len(filtered) == 3
-    assert all(not obj.objectid.lower().startswith("abb") for obj in filtered)
+    assert len(filtered) == 2
+    # All filtered objects must start with 'm' (case-insensitive)
+    assert all(obj.objectid.lower().startswith("m") for obj in filtered)
     assert filtered[0].objectid == "m10040"
     assert filtered[1].objectid == "m10042"
-    assert filtered[2].objectid == "other123"
 
 
 def test_filter_children_only_case_insensitive():

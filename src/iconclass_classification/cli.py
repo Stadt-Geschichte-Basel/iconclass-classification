@@ -155,7 +155,7 @@ def classify(
     )
 
     # Run pipeline
-    run_pipeline(
+    run_dir = run_pipeline(
         source_url=source,
         output_dir=output,
         backend="ollama",
@@ -168,7 +168,7 @@ def classify(
         top_k=top_k,
     )
 
-    click.echo(f"\nPipeline completed. Results saved to: {output}")
+    click.echo(f"\nPipeline completed. Results saved to: {run_dir}")
 
 
 # Provide an alias so docs can use `classify-ollama`
@@ -304,7 +304,7 @@ def classify_openrouter(
     )
 
     # Run pipeline
-    run_pipeline(
+    run_dir = run_pipeline(
         source_url=source,
         output_dir=output,
         backend="openrouter",
@@ -317,7 +317,7 @@ def classify_openrouter(
         top_k=top_k,
     )
 
-    click.echo(f"\nPipeline completed. Results saved to: {output}")
+    click.echo(f"\nPipeline completed. Results saved to: {run_dir}")
 
 
 if __name__ == "__main__":

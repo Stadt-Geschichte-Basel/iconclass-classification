@@ -86,7 +86,7 @@ def classify_image(
 
     # Set headers with API key
     headers = {
-        "Authorization": f"Bearer {config.api_key}",
+        "Authorization": f"Bearer {config.api_key.get_secret_value()}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://github.com/Stadt-Geschichte-Basel/iconclass-classification",
         "X-Title": "Iconclass Classification Pipeline",
@@ -158,15 +158,29 @@ def save_classification_artifacts(
         for message in request_copy["messages"]:
             if "content" in message and isinstance(message["content"], list):
                 for item in message["content"]:
+                    item_type = item.get("type")
+                    # Handle image_url type with dict shape {"image_url": {"url": ...}}
                     if (
-                        item.get("type") == "image_url"
+                        item_type == "image_url"
                         and "image_url" in item
                         and "url" in item["image_url"]
                     ):
-                        # Truncate base64 data
                         url = item["image_url"]["url"]
                         if url.startswith("data:"):
                             item["image_url"]["url"] = url[:50] + "...[truncated]"
+                    # Handle input_image type which can be string or dict
+                    elif item_type == "input_image" and "image_url" in item:
+                        image_field = item["image_url"]
+                        # If it's a string data URI, truncate directly
+                        if isinstance(image_field, str) and image_field.startswith(
+                            "data:"
+                        ):
+                            item["image_url"] = image_field[:50] + "...[truncated]"
+                        # If it's a dict with a url key, truncate that
+                        elif isinstance(image_field, dict) and "url" in image_field:
+                            url = image_field["url"]
+                            if url.startswith("data:"):
+                                image_field["url"] = url[:50] + "...[truncated]"
 
     request_path = classify_dir / f"{objectid}_request.json"
     request_path.write_text(json.dumps(request_copy, indent=2))

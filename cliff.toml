@@ -13,9 +13,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # https://tera.netlify.app/docs/#introduction
 body = """
 {% if version %}\
-    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% if previous %}\
+        {% if previous.version %}\
+            ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/compare/{{ previous.version }}...{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+        {% else %}\
+            ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/releases/tag/{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+        {% endif %}\
+    {% else %}\
+        ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/releases/tag/{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% endif %}\
 {% else %}\
-    ## [Unreleased](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/compare/...HEAD)
+    {% if previous %}\
+        {% if previous.version %}\
+            ## [Unreleased](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/compare/{{ previous.version }}...HEAD)
+        {% else %}\
+            ## [Unreleased](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/compare/...HEAD)
+        {% endif %}\
+    {% else %}\
+        ## [Unreleased](https://github.com/Stadt-Geschichte-Basel/iconclass-classification/compare/...HEAD)
+    {% endif %}\
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | upper_first }}

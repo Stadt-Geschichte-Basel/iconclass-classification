@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 
 class IconclassCodeRank(BaseModel):
@@ -61,7 +61,7 @@ class OllamaConfig(BaseModel):
 class OpenRouterConfig(BaseModel):
     """OpenRouter service configuration."""
 
-    api_key: str
+    api_key: SecretStr
     model: str = "qwen/qwen3-vl-235b-a22b-instruct"
     api_url: str = "https://openrouter.ai/api/v1/chat/completions"
     max_image_size: int = 2048  # Max dimension for image resize
