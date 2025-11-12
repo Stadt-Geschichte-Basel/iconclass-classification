@@ -3,7 +3,7 @@ project:
 
 website:
   title: REPO_NAME
-  favicon: android-chrome-512x512.png
+  favicon: _extensions/sgb-theme/favicon.png
   open-graph: true
   twitter-card: true
   site-url: https://USERNAME.github.io/REPO_NAME/
@@ -17,17 +17,16 @@ website:
     show-item-context: true
     type: overlay
   navbar:
-    logo: android-chrome-512x512.png
-    logo-alt: ''
+    logo: _extensions/sgb-theme/assets/img/logo.svg
+    logo-alt: 'Stadt.Geschichte.Basel Logo'
     title: REPO_NAME
+    tool-collapse: true
     tools:
       - icon: github
         url: https://github.com/USERNAME/REPO_NAME/
     left:
       - text: Readme
         href: index.qmd
-      - text: Report
-        href: report.md
 
   sidebar:
     contents:
@@ -46,16 +45,10 @@ website:
             href: LICENSE-AGPL.md
           - text: Security
             href: SECURITY.md
-      - href: report.md
-        contents: project-management/*
 
 format:
-  html:
+  sgb-theme-html:
     toc: true
-    theme:
-      - brand
-      - cosmo
-    css: styles.css
     code-copy: true
     code-overflow: wrap
     canonical-url: true

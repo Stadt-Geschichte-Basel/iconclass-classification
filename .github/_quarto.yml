@@ -3,7 +3,7 @@ project:
 
 website:
   title: GitHub template for FAIR and open research data
-  favicon: android-chrome-512x512.png
+  favicon: _extensions/sgb-theme/favicon.png
   open-graph: true
   twitter-card: true
   site-url: https://maehr.github.io/open-research-data-template/
@@ -17,17 +17,16 @@ website:
     show-item-context: true
     type: overlay
   navbar:
-    logo: android-chrome-512x512.png
-    logo-alt: ''
+    logo: _extensions/sgb-theme/assets/img/logo.svg
+    logo-alt: 'Stadt.Geschichte.Basel Logo'
     title: open-research-data-template
+    tool-collapse: true
     tools:
       - icon: github
         url: https://github.com/maehr/open-research-data-template/
     left:
       - text: Readme
         href: index.qmd
-      - text: Report
-        href: report.md
 
   sidebar:
     contents:
@@ -46,16 +45,12 @@ website:
             href: LICENSE-AGPL.md
           - text: Security
             href: SECURITY.md
-      - href: report.md
-        contents: project-management/*
 
 format:
-  html:
+  sgb-theme-html:
     toc: true
-    theme: cosmo
     code-copy: true
     code-overflow: wrap
-    css: styles.css
 
 freeze: true
 
