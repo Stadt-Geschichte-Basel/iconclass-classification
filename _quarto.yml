@@ -2,13 +2,13 @@ project:
   type: website
 
 website:
-  title: REPO_NAME
-  favicon: android-chrome-512x512.png
+  title: iconclass-classification
+  favicon: _extensions/sgb-theme/favicon.png
   open-graph: true
   twitter-card: true
-  site-url: https://USERNAME.github.io/REPO_NAME/
-  repo-url: https://github.com/USERNAME/REPO_NAME/
-  issue-url: https://github.com/USERNAME/REPO_NAME/issues/new/choose
+  site-url: https://Stadt-Geschichte-Basel.github.io/iconclass-classification/
+  repo-url: https://github.com/Stadt-Geschichte-Basel/iconclass-classification/
+  issue-url: https://github.com/Stadt-Geschichte-Basel/iconclass-classification/issues/new/choose
   repo-actions: [edit, issue]
   page-navigation: true
   bread-crumbs: true
@@ -17,21 +17,20 @@ website:
     show-item-context: true
     type: overlay
   navbar:
-    logo: android-chrome-512x512.png
-    logo-alt: ''
-    title: REPO_NAME
+    logo: _extensions/sgb-theme/assets/img/logo.svg
+    logo-alt: 'Stadt.Geschichte.Basel Logo'
+    title: iconclass-classification
+    tool-collapse: true
     tools:
       - icon: github
-        url: https://github.com/USERNAME/REPO_NAME/
+        url: https://github.com/Stadt-Geschichte-Basel/iconclass-classification/
     left:
       - text: Readme
         href: index.qmd
-      - text: Report
-        href: report.md
 
   sidebar:
     contents:
-      - section: REPO_NAME
+      - section: iconclass-classification
         href: index.qmd
         contents:
           - text: Changelog
@@ -46,16 +45,10 @@ website:
             href: LICENSE-AGPL.md
           - text: Security
             href: SECURITY.md
-      - href: report.md
-        contents: project-management/*
 
 format:
-  html:
+  sgb-theme-html:
     toc: true
-    theme:
-      - brand
-      - cosmo
-    css: styles.css
     code-copy: true
     code-overflow: wrap
     canonical-url: true

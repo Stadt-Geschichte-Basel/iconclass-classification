@@ -1,8 +1,8 @@
 meta:
-  name: REPO_NAME
+  name: iconclass-classification
   link:
-    home: https://USERNAME.github.io/REPO_NAME
-    github: https://github.com/USERNAME
+    home: https://Stadt-Geschichte-Basel.github.io/iconclass-classification
+    github: https://github.com/Stadt-Geschichte-Basel
   description: |
     SHORT_DESCRIPTION
 

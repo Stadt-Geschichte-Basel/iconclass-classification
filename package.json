@@ -1,8 +1,8 @@
 {
-	"name": "REPO_NAME",
-	"description": "SHORT_DESCRIPTION",
-	"author": "FULLNAME <[INSERT CONTACT METHOD]>",
-	"url": "https://github.com/USERNAME/REPO_NAME/issues",
+	"name": "iconclass-classification",
+	"description": "Reproducible pipeline to classify digital objects using Iconclass VLM via Ollama",
+	"author": "Stadt Geschichte Basel <info@stadtgeschichtebasel.ch>",
+	"url": "https://github.com/Stadt-Geschichte-Basel/iconclass-classification/issues",
 	"license": "AGPL-3.0",
 	"scripts": {
 		"check": "prettier --check .",

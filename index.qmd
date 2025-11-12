@@ -1,5 +1,5 @@
 ---
-title: Open Research Data
+title: Iconclass Classification
 ---
 
 {{< include README.md >}}
